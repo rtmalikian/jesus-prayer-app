@@ -24,7 +24,7 @@ The Fathers speak of the Jesus Prayer as both weapon and protection — *"the sh
 - **Karaoke-style word highlighting** — in auto-prayer mode the words of the Jesus Prayer light up one by one at a natural speaking pace
 - **Cross selector** — a discreet top-right picker with Armenian Apostolic (Oriental Orthodox, the default), Eastern Orthodox, Coptic, Greek Byzantine, and Ethiopian crosses; the cross pendant hangs at the bottom of the rope, as on a real komboskini, and always matches your choice
 - **Prayer tally counter** — tracks beads prayed this sitting, rounds completed, and an all-time total saved on your device
-- **Gentle wooden knock** — a soft synthesized bead sound (WebAudio, no audio files), mutable
+- **Gentle wooden knock + vibration** — a soft, low synthesized bead tap (WebAudio, no audio files) with a subtle phone vibration on each bead; phone-style **Sound / Vibrate / Silent** toggle
 - **Guide to the Jesus Prayer** — tap the ⓘ button for the prayer's biblical roots, its history from an **Oriental Orthodox perspective** (Desert Fathers, St. Isaac the Syrian, St. Gregory of Narek, the Philokalia), and how to begin
 - **No account, no tracking** — everything runs in your browser; your tally never leaves your device
 - **Mobile-friendly** — designed for the phone in your hand, respects `prefers-reduced-motion`
