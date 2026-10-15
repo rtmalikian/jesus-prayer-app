@@ -22,7 +22,7 @@ The Fathers speak of the Jesus Prayer as both weapon and protection — *"the sh
 - **Monk-style bead-rolling animation** — each bead travels to the hand, is taken between thumb and index finger, rolls, and returns; the prayer text breathes with a soft golden pulse as you pray
 - **Pray your way** — tap a bead, scroll, or press `Space` to advance; or switch on **auto-prayer** with three paces (Contemplative, Steady, Flowing)
 - **Karaoke-style word highlighting** — in auto-prayer mode the words of the Jesus Prayer light up one by one at a natural speaking pace
-- **Cross selector** — Armenian Apostolic (Oriental Orthodox, the default), Eastern Orthodox, Coptic, Greek Byzantine, and Ethiopian crosses; the cross on the prayer rope always matches your choice
+- **Cross selector** — a discreet top-right picker with Armenian Apostolic (Oriental Orthodox, the default), Eastern Orthodox, Coptic, Greek Byzantine, and Ethiopian crosses; the cross pendant hangs at the bottom of the rope, as on a real komboskini, and always matches your choice
 - **Prayer tally counter** — tracks beads prayed this sitting, rounds completed, and an all-time total saved on your device
 - **Gentle wooden knock** — a soft synthesized bead sound (WebAudio, no audio files), mutable
 - **Guide to the Jesus Prayer** — tap the ⓘ button for the prayer's biblical roots, its history from an **Oriental Orthodox perspective** (Desert Fathers, St. Isaac the Syrian, St. Gregory of Narek, the Philokalia), and how to begin

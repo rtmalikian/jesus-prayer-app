@@ -59,11 +59,18 @@ body{
   animation:flick 6s ease-in-out infinite}
 @keyframes flick{0%,100%{opacity:.65}28%{opacity:.92}52%{opacity:.72}76%{opacity:.95}}
 header, main, footer{position:relative; z-index:1}
-header{display:flex; align-items:center; justify-content:space-between; padding:16px 20px 4px}
+header{display:flex; align-items:center; justify-content:space-between; padding:12px 16px 2px}
 .brand{display:flex; align-items:center; gap:12px}
 .cross{width:26px; height:38px; color:var(--gold); display:inline-flex; align-items:center}
 .cross svg{width:100%; height:100%}
-.cross-picker{display:flex; justify-content:center; gap:8px; padding:10px 12px 0; position:relative; z-index:1}
+.cross-select{position:relative}
+#crossBtn{width:42px; height:42px; border-radius:50%; border:1px solid var(--line); background:rgba(20,15,9,.8);
+  color:var(--gold-soft); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:8px}
+#crossBtn svg{width:20px; height:28px}
+.cross-menu{position:absolute; right:0; top:calc(100% + 10px); z-index:60; display:flex; gap:6px;
+  background:rgba(18,13,8,.97); border:1px solid var(--line); border-radius:16px; padding:8px;
+  box-shadow:0 12px 40px rgba(0,0,0,.6)}
+.cross-menu[hidden]{display:none}
 .cross-opt{width:42px; height:48px; border-radius:12px; border:1px solid transparent; background:rgba(20,15,9,.55);
   color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:6px}
 .cross-opt svg{width:22px; height:32px}
@@ -75,21 +82,21 @@ header{display:flex; align-items:center; justify-content:space-between; padding:
 .brand h1{margin:0; font-size:27px; font-weight:600; letter-spacing:.04em; line-height:1}
 .brand p{margin:2px 0 0; font-size:13px; letter-spacing:.32em; text-transform:uppercase; color:var(--muted); font-family:system-ui, sans-serif; font-weight:400}
 .top-controls{display:flex; align-items:center; gap:10px}
-.rope-label{font-family:system-ui,sans-serif; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px}
+.rope-label{font-family:system-ui,sans-serif; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px; white-space:nowrap}
 select{background:rgba(20,15,9,.8); color:var(--gold-soft); border:1px solid var(--line); border-radius:10px;
   padding:8px 10px; font-family:system-ui,sans-serif; font-size:14px; cursor:pointer}
 .icon-btn{width:42px; height:42px; border-radius:50%; border:1px solid var(--line); background:rgba(20,15,9,.8);
   color:var(--gold-soft); cursor:pointer; display:flex; align-items:center; justify-content:center}
 .icon-btn svg{width:20px; height:20px}
 .icon-btn.off{color:#6b5f4c}
-main{flex:1; display:flex; flex-direction:column; align-items:center; padding:6px 16px 0; width:100%; max-width:760px; margin:0 auto}
-.prayer-card{text-align:center; margin:10px 0 2px; padding:0 8px}
-.prayer{margin:0; font-size:clamp(25px, 5.6vw, 38px); line-height:1.42; font-weight:500; color:var(--ink)}
+main{flex:1; display:flex; flex-direction:column; align-items:center; padding:4px 14px 0; width:100%; max-width:760px; margin:0 auto}
+.prayer-card{text-align:center; margin:8px 0 0; padding:0 8px}
+.prayer{margin:0; font-size:clamp(22px, 5.4vw, 38px); line-height:1.42; font-weight:500; color:var(--ink)}
 .prayer .name{color:var(--gold-soft)}
 .prayer.pulse{animation:breath 2s ease}
 @keyframes breath{0%{text-shadow:0 0 0 rgba(232,200,122,0)}35%{text-shadow:0 0 26px rgba(232,200,122,.6)}100%{text-shadow:0 0 0 rgba(232,200,122,0)}}
-.prayer-sub{margin:10px 0 0; font-style:italic; color:var(--muted); font-size:16px}
-.stage-wrap{position:relative; width:100%; height:clamp(330px, 50vh, 560px); margin-top:2px}
+.prayer-sub{margin:8px 0 0; font-style:italic; color:var(--muted); font-size:15px}
+.stage-wrap{position:relative; width:100%; height:clamp(280px, 40vh, 560px); margin-top:2px}
 #stage{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; cursor:pointer}
 .round-msg{position:absolute; left:50%; top:44%; transform:translate(-50%,-50%) scale(.96); max-width:82%;
   background:rgba(16,12,7,.92); border:1px solid var(--line); border-radius:16px; padding:18px 26px;
@@ -108,7 +115,7 @@ main{flex:1; display:flex; flex-direction:column; align-items:center; padding:6p
 .ghost:hover{color:var(--gold-soft); border-color:var(--gold)}
 .progress{width:min(430px, 72%); height:3px; background:rgba(217,169,79,.14); border-radius:2px; margin:12px 0 4px; overflow:hidden}
 .progress .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--gold), var(--gold-soft)); border-radius:2px; transition:width .5s ease}
-.controls{display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:10px}
+.controls{display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:8px}
 .pill{border:1px solid var(--gold); background:transparent; color:var(--gold-soft); border-radius:999px;
   padding:12px 30px; font-family:"Cormorant Garamond",serif; font-size:19px; letter-spacing:.06em; cursor:pointer;
   transition:all .3s ease}
@@ -148,12 +155,15 @@ main{flex:1; display:flex; flex-direction:column; align-items:center; padding:6p
 .tab-body li{margin:9px 0}
 .tab-body a{color:var(--gold-soft)}
 .sheet .close-row{display:flex; justify-content:center; margin-top:20px}
-footer{position:relative; z-index:1; text-align:center; padding:14px 16px 22px; color:var(--muted);
-  font-style:italic; font-size:14.5px}
+footer{position:relative; z-index:1; text-align:center; padding:10px 16px 14px; color:var(--muted);
+  font-style:italic; font-size:13.5px}
 @media (max-width:520px){
-  .brand h1{font-size:23px}
-  .prayer-card{margin-top:6px}
-  .stage-wrap{height:clamp(300px, 46vh, 480px)}
+  .brand h1{font-size:21px}
+  .prayer-card{margin-top:4px}
+  .stage-wrap{height:clamp(260px, 38vh, 460px)}
+  .stat .num{font-size:30px}
+  .pill{padding:10px 26px; font-size:18px}
+  .hint{font-size:14px}
 }
 </style>
 </head>
@@ -178,14 +188,16 @@ footer{position:relative; z-index:1; text-align:center; padding:14px 16px 22px; 
         <option value="100">100</option>
       </select>
     </label>
+    <div class="cross-select">
+      <button id="crossBtn" aria-label="Choose a cross" aria-haspopup="true" aria-expanded="false"></button>
+      <div class="cross-menu" id="crossMenu" hidden role="menu"></div>
+    </div>
     <button class="icon-btn" id="soundBtn" aria-label="Toggle bead sound">
       <svg id="soundOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>
       <svg id="soundOffIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5 6 9H3v6h3l5 4V5z"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>
     </button>
   </div>
 </header>
-
-<nav class="cross-picker" id="crossPicker" aria-label="Choose a cross"></nav>
 
 <main>
   <section class="prayer-card" aria-live="polite">
@@ -299,6 +311,7 @@ function crossSVG(id){
 }
 function renderCross(){
   $('logoCross').innerHTML = crossSVG(state.cross);
+  $('crossBtn').innerHTML = crossSVG(state.cross);
   document.querySelectorAll('.cross-opt').forEach(b =>
     b.classList.toggle('on', b.dataset.cross === state.cross));
 }
@@ -313,10 +326,10 @@ const geo = { cx:0, cy:0, rx:0, ry:0, hx:0, hy:0 };
 
 function beadRadius(){ return clamp((geo.rx * 2 * Math.PI / state.ropeSize) * 0.34, 5, 15); }
 function layout(){
-  geo.cx = W/2; geo.cy = H * 0.40;
+  geo.cx = W/2; geo.cy = H * 0.34;
   geo.rx = Math.min(W * 0.36, 300);
-  geo.ry = Math.min(H * 0.30, 225);
-  geo.hx = W/2; geo.hy = H - 74;
+  geo.ry = Math.min(H * 0.27, 200);
+  geo.hx = W/2; geo.hy = H - 70;
 }
 function resize(){
   const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -552,8 +565,8 @@ function drawFingers(pinch, roll){
   const ixX = hx + 8 + fx, ixY = hy - r - 5 - spread;
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 8;
-  finger(hx - 118, hy + 92, thX, thY, 32);   // thumb, rising from below
-  finger(hx - 118, hy - 92, ixX, ixY, 29);   // index finger, descending from above
+  finger(hx - 100, hy + 58, thX, thY, 32);   // thumb, rising from below
+  finger(hx - 100, hy - 58, ixX, ixY, 29);   // index finger, descending from above
   ctx.restore();
 }
 
@@ -600,7 +613,8 @@ function draw(now){
   ctx.beginPath();
   ctx.ellipse(geo.cx, geo.cy, geo.rx, geo.ry, 0, 0, Math.PI * 2);
   ctx.strokeStyle = 'rgba(217,169,79,.26)'; ctx.lineWidth = 2; ctx.stroke();
-  drawMiniCross(geo.cx, geo.cy - geo.ry - 20);
+  // the cross pendant hangs at the bottom of the loop, as on a real prayer rope
+  drawMiniCross(geo.cx, geo.cy + geo.ry + 22);
 
   const r = beadRadius(), a = state.anim;
   for(let i = 0; i < state.ropeSize; i++){
@@ -636,7 +650,10 @@ window.addEventListener('keydown', e => {
     e.preventDefault(); initAudio();
     if(state.auto) setAuto(false); else advance();
   }
-  if(e.key === 'Escape' && !$('modal').hidden) closeModal();
+  if(e.key === 'Escape'){
+    if(!$('modal').hidden) closeModal();
+    $('crossMenu').hidden = true;
+  }
 });
 
 /* ---------------- controls ---------------- */
@@ -736,17 +753,32 @@ $('closeModal').addEventListener('click', closeModal);
 $('modal').addEventListener('click', e => { if(e.target === $('modal')) closeModal(); });
 
 /* ---------------- init ---------------- */
-(function buildCrossPicker(){
-  const nav = $('crossPicker');
+(function buildCrossMenu(){
+  const menu = $('crossMenu'), btn = $('crossBtn');
   CROSSES.forEach(c => {
     const b = document.createElement('button');
     b.className = 'cross-opt';
     b.dataset.cross = c.id;
     b.title = c.label;
     b.setAttribute('aria-label', c.label);
+    b.setAttribute('role', 'menuitem');
     b.innerHTML = crossSVG(c.id);
-    b.addEventListener('click', () => { initAudio(); selectCross(c.id); });
-    nav.appendChild(b);
+    b.addEventListener('click', () => {
+      initAudio(); selectCross(c.id);
+      menu.hidden = true; btn.setAttribute('aria-expanded', 'false');
+    });
+    menu.appendChild(b);
+  });
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const willOpen = menu.hidden;
+    menu.hidden = !willOpen;
+    btn.setAttribute('aria-expanded', String(willOpen));
+  });
+  document.addEventListener('click', e => {
+    if(!menu.hidden && !e.target.closest('.cross-select')){
+      menu.hidden = true; btn.setAttribute('aria-expanded', 'false');
+    }
   });
 })();
 renderCross();
