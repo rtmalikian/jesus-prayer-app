@@ -700,10 +700,18 @@ $('lordModal').addEventListener('click', e => {
 /* ---------------- auto-prayer & karaoke ---------------- */
 const prayerWords = () => Array.from(document.querySelectorAll('#prayerText .w'));
 function clearLit(){ prayerWords().forEach(w => w.classList.remove('lit')); }
+/* karaoke: the Jesus Prayer lights up across the chosen pace; the rosary's
+   longer prayers light up at a calm reading rate scaled by the pace,
+   each bead lasting as long as its prayer takes to read */
+const WORD_RATE = 0.38;   // seconds per word — a prayerful reading rate
 function startKaraoke(){
   clearLit();
   const n = prayerWords().length;
-  state.karaoke = { t0: performance.now(), per: state.pace / n, dur: state.pace, last: -1 };
+  if(!n){ state.karaoke = null; return; }
+  const isR = state.ropeStyle === 'rosary';
+  const per = isR ? WORD_RATE * (state.pace / 6) : state.pace / n;
+  const dur = isR ? per * n + 0.6 : state.pace;
+  state.karaoke = { t0: performance.now(), per: per, dur: dur, last: -1 };
 }
 function stopKaraoke(){ state.karaoke = null; clearLit(); }
 function tickKaraoke(now){
