@@ -24,7 +24,7 @@ The Fathers speak of the Jesus Prayer as both weapon and protection — *"the sh
 - **Karaoke-style word highlighting** — in auto-prayer mode the words of the Jesus Prayer light up one by one at a natural speaking pace
 - **Cross selector** — a discreet top-right picker with Armenian Apostolic (Oriental Orthodox, the default), Eastern Orthodox, Coptic, Greek Byzantine, and Ethiopian crosses; the cross pendant hangs at the bottom of the rope, as on a real komboskini, and always matches your choice
 - **Prayer tally counter** — tracks beads prayed this sitting, rounds completed, and an all-time total saved on your device
-- **Rope styles** — Komboskini (Orthodox knots), Rosary (decades with larger Pater beads), Misbaha (amber beads, imam bead and tassel), Mala (guru bead and tassel), and Anglican (weeks divided by cruciform beads)
+- **Rope styles** — Komboskini (Orthodox knots), Rosary (an actual 59-bead rosary: five decades with Pater beads, a hanging stem with an Our Father bead and three Hail Mary beads, a centerpiece, and a crucifix — it sets its own bead count), Misbaha (amber beads, imam bead and tassel), Mala (guru bead and tassel), and Anglican (weeks divided by cruciform beads)
 - **Marker beads toggle** — a larger, darker bead every 10 beads on the komboskini
 - **The Lord's Prayer** — offered after each completed round, as the Church has always done
 - **Gentle wooden knock + vibration** — a soft, low synthesized bead tap (WebAudio, no audio files) with a subtle phone vibration on each bead; phone-style **Sound / Vibrate / Silent** toggle

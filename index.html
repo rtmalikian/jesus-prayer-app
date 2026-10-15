@@ -67,15 +67,16 @@ header{display:flex; align-items:center; justify-content:space-between; padding:
 #crossBtn{width:42px; height:42px; border-radius:50%; border:1px solid var(--line); background:rgba(20,15,9,.8);
   color:var(--gold-soft); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:8px}
 #crossBtn svg{width:20px; height:28px}
-.cross-menu{position:absolute; right:0; top:calc(100% + 10px); z-index:60; display:flex; gap:6px;
-  background:#141009; border:1px solid rgba(217,169,79,.45); border-radius:16px; padding:8px;
-  box-shadow:0 14px 44px rgba(0,0,0,.8)}
-.cross-menu[hidden]{display:none}
-.cross-opt{width:42px; height:48px; border-radius:12px; border:1px solid transparent; background:rgba(20,15,9,.55);
-  color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:6px}
-.cross-opt svg{width:22px; height:32px}
-.cross-opt.on{border-color:var(--gold); color:var(--gold-soft); background:rgba(217,169,79,.10);
-  box-shadow:0 0 14px rgba(217,169,79,.25)}
+.cross-list{display:flex; flex-direction:column; gap:8px; margin:8px 0 4px}
+.cross-row{display:flex; align-items:center; gap:16px; width:100%; text-align:left;
+  background:rgba(217,169,79,.05); border:1px solid var(--line); border-radius:14px;
+  padding:10px 16px; color:var(--ink); cursor:pointer}
+.cross-row .cx{width:32px; height:46px; color:var(--gold-soft); flex:none; display:flex; align-items:center}
+.cross-row .cx svg{width:100%; height:100%}
+.cross-row .ct{font-size:19px; font-weight:600}
+.cross-row .cs{font-size:14px; color:var(--muted); font-style:italic}
+.cross-row.on{border-color:var(--gold); background:rgba(217,169,79,.12);
+  box-shadow:0 0 16px rgba(217,169,79,.2)}
 .prayer .w{transition:color .25s ease, text-shadow .25s ease}
 .prayer .w.gold{color:var(--gold-soft)}
 .prayer .w.lit{color:#ffedbe; text-shadow:0 0 20px rgba(232,200,122,.9)}
@@ -111,6 +112,7 @@ main{flex:1; display:flex; flex-direction:column; align-items:center; padding:4p
 .chip{background:none; border:1px solid var(--line); color:var(--muted); border-radius:999px; padding:8px 16px;
   font-family:system-ui,sans-serif; font-size:12.5px; letter-spacing:.04em; cursor:pointer}
 .chip.on{color:#1c130a; background:var(--gold-soft); border-color:var(--gold-soft); font-weight:600}
+select:disabled, .chip:disabled{opacity:.4; cursor:default}
 .note{position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-style:italic; color:var(--muted);
   font-size:15px; opacity:0; transition:opacity .5s; pointer-events:none; white-space:nowrap}
 .note.show{opacity:1}
@@ -199,8 +201,7 @@ footer{position:relative; z-index:1; text-align:center; padding:10px 16px 14px; 
       </select>
     </label>
     <div class="cross-select">
-      <button id="crossBtn" aria-label="Choose a cross" aria-haspopup="true" aria-expanded="false"></button>
-      <div class="cross-menu" id="crossMenu" hidden role="menu"></div>
+      <button id="crossBtn" aria-label="Choose a cross"></button>
     </div>
     <button class="icon-btn" id="soundBtn" aria-label="Sound mode">
       <svg id="soundOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>
@@ -280,6 +281,15 @@ footer{position:relative; z-index:1; text-align:center; padding:10px 16px 14px; 
   </div>
 </div>
 
+<div class="modal" id="crossModal" hidden role="dialog" aria-modal="true" aria-label="Choose a cross">
+  <div class="sheet">
+    <h2>Choose a cross</h2>
+    <p class="lede">The cross on the prayer rope will match your choice.</p>
+    <div class="cross-list" id="crossList"></div>
+    <div class="close-row"><button class="pill" id="closeCrossModal">Close</button></div>
+  </div>
+</div>
+
 <footer>A quiet corner of the internet &middot; Soli Deo gloria</footer>
 
 <script>
@@ -322,24 +332,24 @@ const state = {
 
 /* ---------------- crosses ---------------- */
 const CROSSES = [
-  { id:'armenian', label:'Armenian Apostolic (Oriental Orthodox)', art:
+  { id:'armenian', name:'Armenian', sub:'Armenian Apostolic · Oriental Orthodox', art:
     '<path d="M12 6v23M6 13.5h12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>' +
     '<g fill="currentColor"><circle cx="12" cy="3.4" r="2.1"/><circle cx="10" cy="5.2" r="2.1"/><circle cx="14" cy="5.2" r="2.1"/>' +
     '<circle cx="12" cy="31.6" r="2.1"/><circle cx="10" cy="29.8" r="2.1"/><circle cx="14" cy="29.8" r="2.1"/>' +
     '<circle cx="3.4" cy="13.5" r="2.1"/><circle cx="5.2" cy="11.5" r="2.1"/><circle cx="5.2" cy="15.5" r="2.1"/>' +
     '<circle cx="20.6" cy="13.5" r="2.1"/><circle cx="18.8" cy="11.5" r="2.1"/><circle cx="18.8" cy="15.5" r="2.1"/></g>' },
-  { id:'eastern', label:'Eastern Orthodox', art:
+  { id:'eastern', name:'Eastern Orthodox', sub:'Three-bar cross', art:
     '<path d="M12 3v29M6.5 10.5h11M8.5 6h7M9 24l6 3.2" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/>' },
-  { id:'coptic', label:'Coptic Orthodox', art:
+  { id:'coptic', name:'Coptic', sub:'Coptic Orthodox', art:
     '<circle cx="12" cy="17" r="9.5" stroke="currentColor" stroke-width="2" fill="none"/>' +
     '<path d="M12 10v14M5 17h14" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
     '<g fill="currentColor"><circle cx="12" cy="8" r="1.2"/><circle cx="10.4" cy="9.6" r="1.2"/><circle cx="13.6" cy="9.6" r="1.2"/>' +
     '<circle cx="12" cy="26" r="1.2"/><circle cx="10.4" cy="24.4" r="1.2"/><circle cx="13.6" cy="24.4" r="1.2"/>' +
     '<circle cx="3" cy="17" r="1.2"/><circle cx="4.6" cy="15.4" r="1.2"/><circle cx="4.6" cy="18.6" r="1.2"/>' +
     '<circle cx="21" cy="17" r="1.2"/><circle cx="19.4" cy="15.4" r="1.2"/><circle cx="19.4" cy="18.6" r="1.2"/></g>' },
-  { id:'greek', label:'Greek Byzantine', art:
+  { id:'greek', name:'Greek', sub:'Byzantine cross', art:
     '<path d="M12 4v28M5 12.5h14" stroke="currentColor" stroke-width="3.4" fill="none" stroke-linecap="round"/>' },
-  { id:'ethiopian', label:'Ethiopian Orthodox', art:
+  { id:'ethiopian', name:'Ethiopian', sub:'Ethiopian Orthodox', art:
     '<path d="M12 3 L20 17 L12 31 L4 17 Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/>' +
     '<path d="M12 9v16M7.5 17h9" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
     '<path d="M12 13.5 L15.5 17 L12 20.5 L8.5 17 Z" stroke="currentColor" stroke-width="1.6" fill="none"/>' }
@@ -353,10 +363,21 @@ function crossSVG(id){
   const c = CROSSES.find(x => x.id === id) || CROSSES[0];
   return '<svg viewBox="0 0 24 34" aria-hidden="true">' + c.art + '</svg>';
 }
+/* rasterized cross art for the canvas pendant — literally the same artwork as the logo */
+const crossImgCache = {};
+function preloadCrossImages(){
+  CROSSES.forEach(c => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 34">' +
+      c.art.split('currentColor').join('#d9a94f') + '</svg>';
+    const img = new Image();
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    crossImgCache[c.id] = img;
+  });
+}
 function renderCross(){
   $('logoCross').innerHTML = crossSVG(state.cross);
   $('crossBtn').innerHTML = crossSVG(state.cross);
-  document.querySelectorAll('.cross-opt').forEach(b =>
+  document.querySelectorAll('.cross-row').forEach(b =>
     b.classList.toggle('on', b.dataset.cross === state.cross));
 }
 function selectCross(id){
@@ -367,8 +388,8 @@ function selectCross(id){
 const ROPE_STYLES = {
   komboskini: { label:'Komboskini', pendant:'cross', palette:'wood',
     hint:'Komboskini — the Orthodox knotted rope.' },
-  rosary: { label:'Rosary', pendant:'cross', palette:'rosewood',
-    hint:'Rosary — decades of ten with a larger Pater bead between them.' },
+  rosary: { label:'Rosary', pendant:'crucifix', palette:'rosewood',
+    hint:'Rosary — five decades, 59 beads; the bead count is set by the rosary.' },
   misbaha: { label:'Misbaha', pendant:'tassel', palette:'amber',
     hint:'Misbaha — amber beads with an imam bead and tassel.' },
   mala: { label:'Mala', pendant:'guru', palette:'rudraksha',
@@ -386,7 +407,7 @@ const PALETTES = {
 };
 function isMarkerBead(i){
   const N = state.ropeSize, s = state.ropeStyle;
-  if(s === 'rosary') return (i + 1) % 11 === 0;          // Pater bead after each decade
+  if(s === 'rosary') return i >= 4 && ((i - 4 + 1) % 11 === 0);   // Pater bead after each decade
   if(s === 'anglican'){                                   // 4 cruciform beads, evenly spaced
     const step = N / 4;
     for(let k = 0; k < 4; k++) if(i === Math.round(k * step) % N) return true;
@@ -401,13 +422,30 @@ const canvas = $('stage'), ctx = canvas.getContext('2d');
 let W = 0, H = 0;
 const geo = { cx:0, cy:0, rx:0, ry:0, hx:0, hy:0 };
 
-function beadRadius(){ return clamp((geo.rx * 2 * Math.PI / state.ropeSize) * 0.34, 5, 15); }
+function beadRadius(){ return clamp((geo.rx * 2 * Math.PI / loopCount()) * 0.34, 5, 15); }
 function layout(){
   geo.cx = W/2; geo.cy = H * 0.34;
   geo.rx = Math.min(W * 0.36, 300);
   geo.ry = Math.min(H * 0.27, 200);
   geo.hx = W/2; geo.hy = H - 70;
+  if(state.ropeStyle === 'rosary'){
+    // an actual rosary: 5-decade loop + hanging stem (1 large + 3 small beads) + crucifix
+    const hy = H - 58;
+    geo.hy = hy;
+    const crucH = 34, gap = 19;
+    const crucTop = hy - 62 - crucH;
+    geo.crucCX = W/2; geo.crucCY = crucTop + crucH/2; geo.crucH = crucH;
+    geo.stemX = W/2;
+    geo.stemY0 = crucTop - 10;
+    geo.stemGap = gap;
+    const loopBottom = geo.stemY0 - 3*gap - 14;
+    const topM = 8;
+    geo.cy = topM + (loopBottom - topM)*0.52;
+    geo.ry = Math.max(18, (loopBottom - topM)*0.48);
+  }
 }
+function beadCount(){ return state.ropeStyle === 'rosary' ? 59 : state.ropeSize; }
+function loopCount(){ return state.ropeStyle === 'rosary' ? 55 : beadCount(); }
 function resize(){
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const r = canvas.getBoundingClientRect();
@@ -419,7 +457,16 @@ function resize(){
 window.addEventListener('resize', resize);
 
 function beadPos(i){
-  const a = -Math.PI/2 + (i / state.ropeSize) * Math.PI * 2;
+  if(state.ropeStyle === 'rosary'){
+    // the stem: bead 0 is the large Our Father bead nearest the crucifix, 1-3 the small Hail Marys above it
+    if(i < 4) return { x: geo.stemX, y: geo.stemY0 - i * geo.stemGap };
+    // the loop: 55 beads, five decades of ten small + one large Pater, starting at the bottom junction
+    const j = i - 4, N = 55;
+    const a = Math.PI/2 + (j / N) * Math.PI * 2;
+    return { x: geo.cx + geo.rx * Math.cos(a), y: geo.cy + geo.ry * Math.sin(a) };
+  }
+  const N = beadCount();
+  const a = -Math.PI/2 + (i / N) * Math.PI * 2;
   return { x: geo.cx + geo.rx * Math.cos(a), y: geo.cy + geo.ry * Math.sin(a) };
 }
 
@@ -472,7 +519,7 @@ function renderStats(){
   $('statSession').textContent = fmt(state.session);
   $('statRounds').textContent = fmt(state.rounds);
   $('statTotal').textContent = fmt(state.total);
-  $('roundBar').style.width = (state.current / state.ropeSize * 100) + '%';
+  $('roundBar').style.width = (state.current / beadCount() * 100) + '%';
 }
 function pulsePrayer(){
   const p = $('prayerText');
@@ -507,7 +554,7 @@ function countBead(){
 }
 function finishBead(){
   state.current++;
-  const wrapped = state.current >= state.ropeSize;
+  const wrapped = state.current >= beadCount();
   if(wrapped) state.current = 0;
   renderStats();
   state.animating = false; state.anim = null;
@@ -665,10 +712,37 @@ function finger(x1, y1, x2, y2, w){
   ctx.restore();
 }
 
+/* a simple crucifix for the rosary stem: gold beams with a stylized corpus */
+function drawCrucifix(x, y){
+  const h = 38, w = 24;
+  ctx.save();
+  const g = ctx.createLinearGradient(x - 3, 0, x + 3, 0);
+  g.addColorStop(0, '#8a6a2f'); g.addColorStop(0.5, '#e8c87a'); g.addColorStop(1, '#8a6a2f');
+  ctx.fillStyle = g;
+  roundRectPath(x - 2.5, y - h/2, 5, h, 2.5); ctx.fill();
+  roundRectPath(x - w/2, y - h/2 + 9, w, 5, 2.5); ctx.fill();
+  ctx.fillStyle = '#a8843f';
+  ctx.beginPath(); ctx.arc(x, y - h/2 + 5.5, 2.6, 0, Math.PI * 2); ctx.fill();
+  roundRectPath(x - 1.6, y - h/2 + 8.5, 3.2, 13, 1.6); ctx.fill();
+  ctx.strokeStyle = '#a8843f'; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x - 6.5, y - h/2 + 11); ctx.lineTo(x + 6.5, y - h/2 + 11); ctx.stroke();
+  ctx.restore();
+}
 function drawPendant(x, y){
-  // the pendant matches the rope style: cross, imam bead + tassel, or guru bead + tassel
+  // the pendant matches the rope style: cross, crucifix, imam bead + tassel, or guru bead + tassel
   const p = ROPE_STYLES[state.ropeStyle].pendant;
-  if(p === 'cross'){ drawMiniCross(x, y); return; }
+  if(p === 'crucifix'){ drawCrucifix(x, y); return; }
+  if(p === 'cross'){
+    // the exact same artwork as the header logo, rasterized — the pendant IS the logo cross
+    const img = crossImgCache[state.cross];
+    if(img && img.complete && img.naturalWidth){
+      const h = 32, w = h * 24 / 34;
+      ctx.drawImage(img, x - w/2, y - h/2, w, h);
+    } else {
+      drawMiniCross(x, y);
+    }
+    return;
+  }
   ctx.save();
   if(p === 'tassel'){
     // misbaha: elongated imam bead with a hanging tassel
@@ -760,15 +834,32 @@ function draw(now){
   ctx.beginPath();
   ctx.ellipse(geo.cx, geo.cy, geo.rx, geo.ry, 0, 0, Math.PI * 2);
   ctx.strokeStyle = 'rgba(217,169,79,.26)'; ctx.lineWidth = 2; ctx.stroke();
-  // the pendant hangs at the bottom of the loop, as on a real prayer rope
-  drawPendant(geo.cx, geo.cy + geo.ry + 22);
+  if(state.ropeStyle === 'rosary'){
+    // centerpiece medallion where the stem meets the loop
+    ctx.save();
+    ctx.strokeStyle = 'rgba(217,169,79,.7)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(geo.cx, geo.cy + geo.ry, 6, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = 'rgba(217,169,79,.22)';
+    ctx.beginPath(); ctx.arc(geo.cx, geo.cy + geo.ry, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // the crucifix at the end of the hanging stem
+    drawPendant(geo.crucCX, geo.crucCY);
+  } else {
+    // the pendant hangs at the bottom of the loop, as on a real prayer rope,
+    // just touching the space between the bottom beads
+    drawPendant(geo.cx, geo.cy + geo.ry + beadRadius() + 14);
+  }
 
   const r = beadRadius(), a = state.anim;
   const pal = PALETTES[ROPE_STYLES[state.ropeStyle].palette];
-  for(let i = 0; i < state.ropeSize; i++){
+  const isR = state.ropeStyle === 'rosary';
+  const n = beadCount();
+  for(let i = 0; i < n; i++){
     if(a && i === a.bead) continue;   // this bead is in the hand
-    const p = beadPos(i), mk = isMarkerBead(i);
-    drawBead(p.x, p.y, mk ? r * 1.38 : r, {
+    const p = beadPos(i);
+    const mk = isR ? (i === 0 || isMarkerBead(i)) : isMarkerBead(i);
+    const br = isR ? rosaryBeadR(i, r) : (mk ? r * 1.38 : r);
+    drawBead(p.x, p.y, br, {
       prayed: i < state.current,
       active: i === state.current && !a,
       now: now, marker: mk, pal: pal
@@ -776,9 +867,16 @@ function draw(now){
   }
   if(a){
     if(a.phase !== 'travel') drawFingers(a.pinch, a.roll);
-    const mk = isMarkerBead(a.bead);
-    drawBead(a.bx, a.by, (mk ? r * 1.38 : r) * 1.12, { active:true, roll:a.roll, now:now, marker:mk, pal:pal });
+    const mk = isR ? (a.bead === 0 || isMarkerBead(a.bead)) : isMarkerBead(a.bead);
+    const br = (isR ? rosaryBeadR(a.bead, r) : (mk ? r * 1.38 : r)) * 1.12;
+    drawBead(a.bx, a.by, br, { active:true, roll:a.roll, now:now, marker:mk, pal:pal });
   }
+}
+/* rosary bead sizing: the large Our Father bead, the three small Hail Marys, then the loop decades */
+function rosaryBeadR(i, r){
+  if(i === 0) return r * 1.35;
+  if(i < 4) return r * 0.95;
+  return isMarkerBead(i) ? r * 1.38 : r;
 }
 
 /* ---------------- input: tap, scroll, keyboard ---------------- */
@@ -806,7 +904,7 @@ window.addEventListener('keydown', e => {
   if(e.key === 'Escape'){
     if(!$('modal').hidden) closeModal();
     if(!$('lordModal').hidden){ $('lordModal').hidden = true; document.body.style.overflow = ''; }
-    $('crossMenu').hidden = true;
+    if(!$('crossModal').hidden) closeCrossModal();
   }
 });
 
@@ -829,12 +927,24 @@ $('ropeSize').addEventListener('change', e => {
 $('ropeStyle').value = state.ropeStyle;
 $('ropeStyle').addEventListener('change', e => {
   state.ropeStyle = e.target.value; store.set('ropeStyle', state.ropeStyle);
-  renderStats(); note(ROPE_STYLES[state.ropeStyle].hint);
+  state.current = 0;   // bead indices change meaning between layouts
+  layout(); renderRopeControls(); renderStats();
+  note(ROPE_STYLES[state.ropeStyle].hint);
 });
 const markerBtn = $('markerBtn');
 function renderMarker(){
   markerBtn.classList.toggle('on', state.markers);
   markerBtn.setAttribute('aria-pressed', String(state.markers));
+}
+/* the rosary fixes its own bead count; marker beads are built into the other patterns */
+function renderRopeControls(){
+  const isR = state.ropeStyle === 'rosary';
+  $('ropeSize').disabled = isR;
+  $('ropeSize').title = isR ? 'The rosary is always 59 beads' : 'Number of beads on the rope';
+  markerBtn.disabled = state.ropeStyle !== 'komboskini';
+  markerBtn.title = state.ropeStyle === 'komboskini'
+    ? 'A larger, darker bead every 10 beads'
+    : 'Marker beads are built into the ' + ROPE_STYLES[state.ropeStyle].label + ' pattern';
 }
 markerBtn.addEventListener('click', () => {
   state.markers = !state.markers; store.set('markers', state.markers);
@@ -842,6 +952,7 @@ markerBtn.addEventListener('click', () => {
   note(state.markers ? 'Marker beads on — a larger, darker bead every 10.' : 'Marker beads off.');
 });
 renderMarker();
+renderRopeControls();
 $('resetBtn').addEventListener('click', () => {
   state.session = 0; state.rounds = 0; state.current = 0;
   renderStats(); note('Counter reset — begin again, gently.');
@@ -932,37 +1043,28 @@ $('infoBtn').addEventListener('click', openModal);
 $('closeModal').addEventListener('click', closeModal);
 $('modal').addEventListener('click', e => { if(e.target === $('modal')) closeModal(); });
 
-/* ---------------- init ---------------- */
-(function buildCrossMenu(){
-  const menu = $('crossMenu'), btn = $('crossBtn');
+/* ---------------- cross chooser sheet ---------------- */
+function openCrossModal(){ renderCross(); $('crossModal').hidden = false; document.body.style.overflow = 'hidden'; }
+function closeCrossModal(){ $('crossModal').hidden = true; document.body.style.overflow = ''; }
+(function buildCrossList(){
+  const list = $('crossList');
   CROSSES.forEach(c => {
     const b = document.createElement('button');
-    b.className = 'cross-opt';
+    b.className = 'cross-row';
     b.dataset.cross = c.id;
-    b.title = c.label;
-    b.setAttribute('aria-label', c.label);
-    b.setAttribute('role', 'menuitem');
-    b.innerHTML = crossSVG(c.id);
-    b.addEventListener('click', () => {
-      initAudio(); selectCross(c.id);
-      menu.hidden = true; btn.setAttribute('aria-expanded', 'false');
-    });
-    menu.appendChild(b);
+    b.setAttribute('aria-label', c.name + ' — ' + c.sub);
+    b.innerHTML = '<span class="cx">' + crossSVG(c.id) + '</span>' +
+      '<span><span class="ct">' + c.name + '</span><br><span class="cs">' + c.sub + '</span></span>';
+    b.addEventListener('click', () => { initAudio(); selectCross(c.id); closeCrossModal(); });
+    list.appendChild(b);
   });
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    const willOpen = menu.hidden;
-    menu.hidden = !willOpen;
-    btn.setAttribute('aria-expanded', String(willOpen));
-  });
-  document.addEventListener('click', e => {
-    if(!menu.hidden && !e.target.closest('.cross-select')){
-      menu.hidden = true; btn.setAttribute('aria-expanded', 'false');
-    }
-  });
+  $('crossBtn').addEventListener('click', () => { initAudio(); openCrossModal(); });
+  $('closeCrossModal').addEventListener('click', closeCrossModal);
+  $('crossModal').addEventListener('click', e => { if(e.target === $('crossModal')) closeCrossModal(); });
 })();
 renderCross();
 renderStats();
+preloadCrossImages();
 resize();
 requestAnimationFrame(tick);
 })();
