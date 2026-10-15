@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Jesus Prayer App — Virtual Orthodox Prayer Rope (Komboskini) | Pray Without Ceasing</title>
+<meta name="description" content="Pray the Jesus Prayer — 'Lord Jesus Christ, Son of God, have mercy on me, a sinner' — bead by bead on a virtual Orthodox prayer rope. A gentle monk-style bead-rolling animation, auto-prayer mode, tap/scroll advance, a prayer tally counter, and a guide to the biblical roots of unceasing prayer from an Oriental Orthodox perspective.">
+<meta name="keywords" content="Jesus Prayer app, virtual prayer rope, Orthodox prayer beads, komboskini, chotki, prayer rope app, hesychasm, unceasing prayer, pray without ceasing, 1 Thessalonians 5:17, Oriental Orthodox prayer, Desert Fathers, St Isaac the Syrian, St Gregory of Narek, Philokalia, Christian meditation app, Jesus Prayer counter">
+<meta name="author" content="Raphael Malikian">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://rtmalikian.github.io/jesus-prayer-app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jesus Prayer App — Virtual Orthodox Prayer Rope">
+<meta property="og:description" content="'Lord Jesus Christ, Son of God, have mercy on me, a sinner.' Roll each bead with a gentle monk-style animation, pray at your own pace or in auto-prayer mode, and discover the biblical roots of unceasing prayer.">
+<meta property="og:url" content="https://rtmalikian.github.io/jesus-prayer-app/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Jesus Prayer App — Virtual Orthodox Prayer Rope">
+<meta name="twitter:description" content="A quiet corner of the internet for the Jesus Prayer: virtual prayer rope, gentle bead-rolling animation, auto-prayer, and the biblical roots of unceasing prayer.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Jesus Prayer App — Virtual Orthodox Prayer Rope",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "url": "https://rtmalikian.github.io/jesus-prayer-app/",
+  "description": "Pray the Jesus Prayer — 'Lord Jesus Christ, Son of God, have mercy on me, a sinner' — bead by bead on a virtual Orthodox prayer rope (komboskini/chotki), with a gentle bead-rolling animation, auto-prayer mode, a prayer tally counter, and a guide to the biblical roots of unceasing prayer from an Oriental Orthodox perspective.",
+  "author": { "@type": "Person", "name": "Raphael Malikian", "url": "https://github.com/rtmalikian" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "isAccessibleForFree": true
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#0b0906; --bg1:#151009;
+  --gold:#d9a94f; --gold-soft:#e8c87a; --gold-dim:rgba(217,169,79,.28);
+  --ink:#ece1cb; --muted:#a3906f;
+  --card:rgba(26,20,12,.66); --line:rgba(217,169,79,.22);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:radial-gradient(120% 90% at 50% 0%, #1d150b 0%, var(--bg1) 46%, var(--bg0) 100%);
+  color:var(--ink);
+  font-family:"Cormorant Garamond", Georgia, "Times New Roman", serif;
+  min-height:100dvh; display:flex; flex-direction:column; overflow-x:hidden;
+}
+.vignette{position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:radial-gradient(92% 72% at 50% 42%, transparent 42%, rgba(0,0,0,.58) 100%)}
+.grain{position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.055;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.6'/></svg>")}
+.candle{position:fixed; left:50%; top:36%; width:70vmax; height:70vmax; z-index:0;
+  transform:translate(-50%,-50%); pointer-events:none;
+  background:radial-gradient(circle, rgba(255,172,64,.11), rgba(255,172,64,.03) 45%, transparent 65%);
+  animation:flick 6s ease-in-out infinite}
+@keyframes flick{0%,100%{opacity:.65}28%{opacity:.92}52%{opacity:.72}76%{opacity:.95}}
+header, main, footer{position:relative; z-index:1}
+header{display:flex; align-items:center; justify-content:space-between; padding:16px 20px 4px}
+.brand{display:flex; align-items:center; gap:12px}
+.cross{width:26px; height:36px; color:var(--gold)}
+.brand h1{margin:0; font-size:27px; font-weight:600; letter-spacing:.04em; line-height:1}
+.brand p{margin:2px 0 0; font-size:13px; letter-spacing:.32em; text-transform:uppercase; color:var(--muted); font-family:system-ui, sans-serif; font-weight:400}
+.top-controls{display:flex; align-items:center; gap:10px}
+.rope-label{font-family:system-ui,sans-serif; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px}
+select{background:rgba(20,15,9,.8); color:var(--gold-soft); border:1px solid var(--line); border-radius:10px;
+  padding:8px 10px; font-family:system-ui,sans-serif; font-size:14px; cursor:pointer}
+.icon-btn{width:42px; height:42px; border-radius:50%; border:1px solid var(--line); background:rgba(20,15,9,.8);
+  color:var(--gold-soft); cursor:pointer; display:flex; align-items:center; justify-content:center}
+.icon-btn svg{width:20px; height:20px}
+.icon-btn.off{color:#6b5f4c}
+main{flex:1; display:flex; flex-direction:column; align-items:center; padding:6px 16px 0; width:100%; max-width:760px; margin:0 auto}
+.prayer-card{text-align:center; margin:10px 0 2px; padding:0 8px}
+.prayer{margin:0; font-size:clamp(25px, 5.6vw, 38px); line-height:1.42; font-weight:500; color:var(--ink)}
+.prayer .name{color:var(--gold-soft)}
+.prayer.pulse{animation:breath 2s ease}
+@keyframes breath{0%{text-shadow:0 0 0 rgba(232,200,122,0)}35%{text-shadow:0 0 26px rgba(232,200,122,.6)}100%{text-shadow:0 0 0 rgba(232,200,122,0)}}
+.prayer-sub{margin:10px 0 0; font-style:italic; color:var(--muted); font-size:16px}
+.stage-wrap{position:relative; width:100%; height:clamp(330px, 50vh, 560px); margin-top:2px}
+#stage{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; cursor:pointer}
+.round-msg{position:absolute; left:50%; top:44%; transform:translate(-50%,-50%) scale(.96); max-width:82%;
+  background:rgba(16,12,7,.92); border:1px solid var(--line); border-radius:16px; padding:18px 26px;
+  text-align:center; font-size:21px; font-style:italic; color:var(--gold-soft);
+  opacity:0; pointer-events:none; transition:opacity .6s ease, transform .6s ease}
+.round-msg.show{opacity:1; transform:translate(-50%,-50%) scale(1)}
+.note{position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-style:italic; color:var(--muted);
+  font-size:15px; opacity:0; transition:opacity .5s; pointer-events:none; white-space:nowrap}
+.note.show{opacity:1}
+.tally{display:flex; align-items:center; gap:clamp(20px,6vw,44px); margin-top:2px}
+.stat{display:flex; flex-direction:column; align-items:center}
+.stat .num{font-size:34px; font-weight:600; color:var(--gold-soft); line-height:1.1; font-variant-numeric:tabular-nums}
+.stat .lbl{font-family:system-ui,sans-serif; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); margin-top:4px}
+.ghost{background:none; border:1px solid var(--line); color:var(--muted); border-radius:999px; padding:7px 16px;
+  font-family:system-ui,sans-serif; font-size:12px; letter-spacing:.1em; cursor:pointer}
+.ghost:hover{color:var(--gold-soft); border-color:var(--gold)}
+.progress{width:min(430px, 72%); height:3px; background:rgba(217,169,79,.14); border-radius:2px; margin:12px 0 4px; overflow:hidden}
+.progress .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--gold), var(--gold-soft)); border-radius:2px; transition:width .5s ease}
+.controls{display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:10px}
+.pill{border:1px solid var(--gold); background:transparent; color:var(--gold-soft); border-radius:999px;
+  padding:12px 30px; font-family:"Cormorant Garamond",serif; font-size:19px; letter-spacing:.06em; cursor:pointer;
+  transition:all .3s ease}
+.pill.on{background:linear-gradient(135deg, var(--gold), var(--gold-soft)); color:#1c130a; font-weight:600;
+  box-shadow:0 0 26px rgba(217,169,79,.35)}
+.pace{display:flex; gap:8px}
+.pace button{background:none; border:1px solid var(--line); color:var(--muted); border-radius:999px;
+  padding:7px 15px; font-family:system-ui,sans-serif; font-size:12.5px; cursor:pointer}
+.pace button.on{color:#1c130a; background:var(--gold-soft); border-color:var(--gold-soft)}
+.hint{margin:6px 0 0; color:var(--muted); font-style:italic; font-size:15.5px; text-align:center}
+.hint kbd{font-family:system-ui,sans-serif; font-style:normal; font-size:12px; border:1px solid var(--line);
+  border-radius:6px; padding:2px 8px; color:var(--gold-soft)}
+#infoBtn{position:fixed; right:20px; bottom:20px; z-index:40; width:54px; height:54px; border-radius:50%;
+  border:1px solid var(--line); background:rgba(22,16,9,.92); color:var(--gold-soft);
+  font-family:"Cormorant Garamond",serif; font-style:italic; font-size:26px; cursor:pointer;
+  box-shadow:0 4px 22px rgba(0,0,0,.5)}
+#infoBtn:hover{border-color:var(--gold)}
+.modal{position:fixed; inset:0; z-index:50; background:rgba(6,4,2,.72); backdrop-filter:blur(7px);
+  display:flex; align-items:center; justify-content:center; padding:16px}
+.modal[hidden]{display:none}
+.sheet{width:min(700px,94vw); max-height:86dvh; overflow-y:auto; background:linear-gradient(180deg,#181208,#0f0b06);
+  border:1px solid var(--line); border-radius:20px; padding:24px 26px 28px; box-shadow:0 20px 80px rgba(0,0,0,.6)}
+.sheet h2{margin:0 0 4px; font-size:26px; font-weight:600; color:var(--gold-soft)}
+.sheet .lede{margin:0 0 14px; font-style:italic; color:var(--muted); font-size:16.5px}
+.tabs{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 16px}
+.tab{background:none; border:1px solid var(--line); color:var(--muted); border-radius:999px; padding:8px 16px;
+  font-family:system-ui,sans-serif; font-size:13px; cursor:pointer}
+.tab.on{color:#1c130a; background:var(--gold-soft); border-color:var(--gold-soft)}
+.tab-body{font-size:18px; line-height:1.68}
+.tab-body h3{color:var(--gold-soft); font-size:20px; margin:20px 0 6px; font-weight:600}
+.tab-body h3:first-child{margin-top:0}
+.tab-body p{margin:10px 0}
+.tab-body blockquote{margin:14px 0; padding:12px 18px; border-left:2px solid var(--gold); font-style:italic;
+  font-size:20px; color:var(--gold-soft); background:rgba(217,169,79,.06); border-radius:0 12px 12px 0}
+.tab-body .verse{color:var(--muted); font-size:15px}
+.tab-body ul{margin:10px 0; padding-left:22px}
+.tab-body li{margin:9px 0}
+.tab-body a{color:var(--gold-soft)}
+.sheet .close-row{display:flex; justify-content:center; margin-top:20px}
+footer{position:relative; z-index:1; text-align:center; padding:14px 16px 22px; color:var(--muted);
+  font-style:italic; font-size:14.5px}
+@media (max-width:520px){
+  .brand h1{font-size:23px}
+  .prayer-card{margin-top:6px}
+  .stage-wrap{height:clamp(300px, 46vh, 480px)}
+}
+</style>
+</head>
+<body>
+<div class="vignette"></div>
+<div class="grain"></div>
+<div class="candle"></div>
+
+<header>
+  <div class="brand">
+    <svg class="cross" viewBox="0 0 24 34" aria-hidden="true">
+      <path d="M12 3v29M6.5 10.5h11M8.5 6h7M9 24l6 3.2" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <h1>Jesus Prayer</h1>
+      <p>virtual prayer rope</p>
+    </div>
+  </div>
+  <div class="top-controls">
+    <label class="rope-label">Beads
+      <select id="ropeSize" aria-label="Number of beads on the rope">
+        <option value="33">33</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </label>
+    <button class="icon-btn" id="soundBtn" aria-label="Toggle bead sound">
+      <svg id="soundOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>
+      <svg id="soundOffIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5 6 9H3v6h3l5 4V5z"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="prayer-card" aria-live="polite">
+    <p class="prayer" id="prayerText"><span class="name">Lord Jesus Christ</span>, Son of God,<br>have mercy on me, a sinner.</p>
+    <p class="prayer-sub">said once for each bead &mdash; gently, from the heart</p>
+  </section>
+
+  <div class="stage-wrap">
+    <canvas id="stage" aria-label="Virtual prayer rope. Activate to pray the next bead."></canvas>
+    <div class="round-msg" id="roundMsg">Glory to God &mdash; one round complete.<br><span style="font-size:16px">Rest a moment, or continue.</span></div>
+    <div class="note" id="note"></div>
+  </div>
+
+  <section class="tally" aria-label="Prayer tally">
+    <div class="stat"><span class="num" id="statSession">0</span><span class="lbl">this sitting</span></div>
+    <div class="stat"><span class="num" id="statRounds">0</span><span class="lbl">rounds</span></div>
+    <div class="stat"><span class="num" id="statTotal">0</span><span class="lbl">all time</span></div>
+    <button class="ghost" id="resetBtn">reset</button>
+  </section>
+  <div class="progress" aria-hidden="true"><div class="bar" id="roundBar"></div></div>
+
+  <section class="controls">
+    <button class="pill" id="autoBtn" aria-pressed="false">Auto-prayer &middot; Off</button>
+    <div class="pace" id="paceRow" hidden>
+      <button data-pace="8000">Contemplative</button>
+      <button data-pace="5000">Steady</button>
+      <button data-pace="3500">Flowing</button>
+    </div>
+    <p class="hint" id="hint">Tap a bead &middot; scroll &middot; or press <kbd>Space</kbd> to pray the next bead</p>
+  </section>
+</main>
+
+<button id="infoBtn" aria-label="About the Jesus Prayer">i</button>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="About the Jesus Prayer">
+  <div class="sheet">
+    <h2>The Jesus Prayer</h2>
+    <p class="lede">A short guide &mdash; offered gently, for anyone who is drawn to pray.</p>
+    <div class="tabs" id="tabs"></div>
+    <div class="tab-body" id="tabBody"></div>
+    <div class="close-row"><button class="pill" id="closeModal">Close</button></div>
+  </div>
+</div>
+
+<footer>A quiet corner of the internet &middot; Soli Deo gloria</footer>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------------- helpers ---------------- */
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const easeIO = t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2;
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt = n => n.toLocaleString('en-US');
+
+const store = {
+  get(k, d){ try { const v = localStorage.getItem('jpa_' + k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem('jpa_' + k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ---------------- state ---------------- */
+const state = {
+  ropeSize: store.get('size', 33),
+  current: 0,          // beads prayed in the current round
+  session: 0,          // beads prayed this sitting
+  rounds: 0,           // rounds completed this sitting
+  total: store.get('total', 0),
+  auto: false,
+  pace: store.get('pace', 5000),
+  sound: store.get('sound', true),
+  animating: false,
+  anim: null,
+  autoTimer: null
+};
+
+/* ---------------- canvas & geometry ---------------- */
+const canvas = $('stage'), ctx = canvas.getContext('2d');
+let W = 0, H = 0;
+const geo = { cx:0, cy:0, rx:0, ry:0, hx:0, hy:0 };
+
+function beadRadius(){ return clamp((geo.rx * 2 * Math.PI / state.ropeSize) * 0.34, 5, 15); }
+function layout(){
+  geo.cx = W/2; geo.cy = H * 0.40;
+  geo.rx = Math.min(W * 0.36, 300);
+  geo.ry = Math.min(H * 0.30, 225);
+  geo.hx = W/2; geo.hy = H - 74;
+}
+function resize(){
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const r = canvas.getBoundingClientRect();
+  W = r.width; H = r.height;
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  layout();
+}
+window.addEventListener('resize', resize);
+
+function beadPos(i){
+  const a = -Math.PI/2 + (i / state.ropeSize) * Math.PI * 2;
+  return { x: geo.cx + geo.rx * Math.cos(a), y: geo.cy + geo.ry * Math.sin(a) };
+}
+
+/* ---------------- gentle wooden knock (WebAudio, no files) ---------------- */
+let AC = null;
+function initAudio(){
+  try {
+    if(!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    if(AC.state === 'suspended') AC.resume();
+  } catch(e){}
+}
+function knock(){
+  if(!state.sound || !AC) return;
+  try {
+    const t = AC.currentTime;
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(205, t);
+    o.frequency.exponentialRampToValueAtTime(72, t + 0.10);
+    g.gain.setValueAtTime(0.22, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    o.connect(g); g.connect(AC.destination);
+    o.start(t); o.stop(t + 0.16);
+    const len = Math.floor(AC.sampleRate * 0.03);
+    const buf = AC.createBuffer(1, len, AC.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i = 0; i < len; i++) d[i] = (Math.random()*2 - 1) * (1 - i/len);
+    const s = AC.createBufferSource(); s.buffer = buf;
+    const f = AC.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2600; f.Q.value = 1.2;
+    const g2 = AC.createGain();
+    g2.gain.setValueAtTime(0.10, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    s.connect(f); f.connect(g2); g2.connect(AC.destination);
+    s.start(t);
+  } catch(e){}
+}
+
+/* ---------------- tally & UI ---------------- */
+function renderStats(){
+  $('statSession').textContent = fmt(state.session);
+  $('statRounds').textContent = fmt(state.rounds);
+  $('statTotal').textContent = fmt(state.total);
+  $('roundBar').style.width = (state.current / state.ropeSize * 100) + '%';
+}
+function pulsePrayer(){
+  const p = $('prayerText');
+  p.classList.remove('pulse'); void p.offsetWidth; p.classList.add('pulse');
+}
+let noteTimer = null;
+function note(msg, ms){
+  const n = $('note');
+  n.textContent = msg; n.classList.add('show');
+  clearTimeout(noteTimer);
+  noteTimer = setTimeout(() => n.classList.remove('show'), ms || 2600);
+}
+
+/* ---------------- the prayer step ---------------- */
+const DUR = { travel: 380, pinch: 260, roll: 720, release: 380 };
+
+function advance(){
+  if(state.animating) return;
+  initAudio();
+  if(RM){ countBead(); finishBead(); return; }
+  state.animating = true;
+  const i = state.current, p0 = beadPos(i);
+  state.anim = { bead:i, phase:'travel', t0:performance.now(), from:p0, bx:p0.x, by:p0.y, pinch:0, roll:0, to:null };
+}
+function countBead(){
+  // the moment the bead rolls between finger and thumb, the prayer is said
+  state.session++; state.total++;
+  store.set('total', state.total);
+  renderStats(); pulsePrayer(); knock();
+}
+function finishBead(){
+  state.current++;
+  renderStats();
+  if(state.current >= state.ropeSize) roundComplete();
+  state.animating = false; state.anim = null;
+  if(state.auto) scheduleAuto();
+}
+function roundComplete(){
+  state.rounds++;
+  renderStats();
+  const m = $('roundMsg');
+  m.classList.add('show');
+  setTimeout(() => {
+    state.current = 0;
+    renderStats();
+    m.classList.remove('show');
+  }, 3000);
+}
+
+/* ---------------- auto-prayer ---------------- */
+function scheduleAuto(){
+  clearTimeout(state.autoTimer);
+  state.autoTimer = setTimeout(() => {
+    if(state.auto && !state.animating) advance();
+  }, state.pace);
+}
+function setAuto(on){
+  state.auto = on;
+  const b = $('autoBtn');
+  b.classList.toggle('on', on);
+  b.setAttribute('aria-pressed', String(on));
+  b.innerHTML = on ? 'Auto-prayer &middot; On' : 'Auto-prayer &middot; Off';
+  $('paceRow').hidden = !on;
+  clearTimeout(state.autoTimer);
+  if(on) setTimeout(() => { if(state.auto && !state.animating) advance(); }, 700);
+}
+
+/* ---------------- animation tick ---------------- */
+function tick(now){
+  const a = state.anim;
+  if(a){
+    const el = now - a.t0;
+    if(a.phase === 'travel'){
+      const p = easeIO(clamp(el / DUR.travel, 0, 1));
+      a.bx = a.from.x + (geo.hx - a.from.x) * p;
+      a.by = a.from.y + (geo.hy - a.from.y) * p;
+      if(el >= DUR.travel){ a.phase = 'pinch'; a.t0 = now; }
+    } else if(a.phase === 'pinch'){
+      a.pinch = clamp(el / DUR.pinch, 0, 1);
+      a.bx = geo.hx; a.by = geo.hy;
+      if(el >= DUR.pinch){ a.phase = 'roll'; a.t0 = now; countBead(); }
+    } else if(a.phase === 'roll'){
+      const p = easeIO(clamp(el / DUR.roll, 0, 1));
+      const r = beadRadius() * 1.12;
+      a.roll = p * Math.PI * 2;
+      a.bx = geo.hx - r * 0.85 + p * r * 1.7;
+      a.by = geo.hy;
+      if(el >= DUR.roll){ a.phase = 'release'; a.t0 = now; a.to = beadPos(a.bead); }
+    } else if(a.phase === 'release'){
+      const p = easeIO(clamp(el / DUR.release, 0, 1));
+      a.pinch = 1 - p;
+      a.bx = geo.hx + (a.to.x - geo.hx) * p;
+      a.by = geo.hy + (a.to.y - geo.hy) * p;
+      if(el >= DUR.release) finishBead();
+    }
+  }
+  draw(now);
+  requestAnimationFrame(tick);
+}
+
+/* ---------------- drawing ---------------- */
+function roundRectPath(x, y, w, h, rad){
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
+}
+
+function drawBead(x, y, r, o){
+  o = o || {};
+  if(o.active){
+    const pulse = 0.5 + 0.5 * Math.sin((o.now || 0) / 620);
+    const g = ctx.createRadialGradient(x, y, r * 0.5, x, y, r * 2.7);
+    g.addColorStop(0, 'rgba(232,200,122,' + (0.30 + 0.16 * pulse).toFixed(3) + ')');
+    g.addColorStop(1, 'rgba(232,200,122,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r * 2.7, 0, Math.PI * 2); ctx.fill();
+  }
+  const wg = ctx.createRadialGradient(x - r*0.35, y - r*0.4, r*0.12, x, y, r);
+  if(o.prayed){ wg.addColorStop(0, '#5d3f27'); wg.addColorStop(0.55, '#3a2515'); wg.addColorStop(1, '#1c1009'); }
+  else { wg.addColorStop(0, '#8a5f3a'); wg.addColorStop(0.55, '#5a3a22'); wg.addColorStop(1, '#2c1a0e'); }
+  ctx.fillStyle = wg;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = o.active ? 'rgba(240,205,130,.95)' : 'rgba(217,169,79,.30)';
+  ctx.stroke();
+  // rolling highlight — rotates as the bead rolls between finger and thumb
+  const ha = (o.roll || -0.7);
+  ctx.beginPath(); ctx.arc(x, y, r * 0.60, ha, ha + 1.15);
+  ctx.strokeStyle = 'rgba(255,236,200,.55)';
+  ctx.lineWidth = Math.max(1.4, r * 0.16); ctx.lineCap = 'round'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x - r*0.30, y - r*0.36, Math.max(1, r*0.11), 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,244,220,.45)'; ctx.fill();
+}
+
+function finger(x1, y1, x2, y2, w){
+  const ang = Math.atan2(y2 - y1, x2 - x1);
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  ctx.save(); ctx.translate(x1, y1); ctx.rotate(ang);
+  const g = ctx.createLinearGradient(0, -w/2, 0, w/2);
+  g.addColorStop(0, '#e3ac80'); g.addColorStop(0.5, '#cd9266'); g.addColorStop(1, '#9c6640');
+  ctx.fillStyle = g;
+  roundRectPath(0, -w/2, len + w * 0.35, w, w/2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(70,38,20,.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.restore();
+}
+
+function drawFingers(pinch, roll){
+  const hx = geo.hx, hy = geo.hy, r = beadRadius() * 1.12;
+  const spread = 30 * (1 - pinch);
+  const fx = Math.sin(roll || 0) * r * 0.4 * pinch;   // fingers follow the roll a little
+  const thX = hx - 6 + fx, thY = hy + r + 5 + spread;
+  const ixX = hx + 8 + fx, ixY = hy - r - 5 - spread;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 8;
+  finger(hx - 118, hy + 92, thX, thY, 32);   // thumb, rising from below
+  finger(hx - 118, hy - 92, ixX, ixY, 29);   // index finger, descending from above
+  ctx.restore();
+}
+
+function drawMiniCross(x, y){
+  ctx.save();
+  ctx.strokeStyle = 'rgba(217,169,79,.75)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x, y - 13); ctx.lineTo(x, y + 13);
+  ctx.moveTo(x - 6, y - 6); ctx.lineTo(x + 6, y - 6);
+  ctx.moveTo(x - 9, y + 1); ctx.lineTo(x + 9, y + 1);
+  ctx.moveTo(x - 6, y + 8); ctx.lineTo(x + 6, y + 10.5);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function draw(now){
+  ctx.clearRect(0, 0, W, H);
+  // the cord
+  ctx.beginPath();
+  ctx.ellipse(geo.cx, geo.cy, geo.rx, geo.ry, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(217,169,79,.26)'; ctx.lineWidth = 2; ctx.stroke();
+  drawMiniCross(geo.cx, geo.cy - geo.ry - 16);
+
+  const r = beadRadius(), a = state.anim;
+  for(let i = 0; i < state.ropeSize; i++){
+    if(a && i === a.bead) continue;   // this bead is in the hand
+    const p = beadPos(i);
+    drawBead(p.x, p.y, r, {
+      prayed: i < state.current,
+      active: i === state.current && !a,
+      now: now
+    });
+  }
+  if(a){
+    if(a.phase !== 'travel') drawFingers(a.pinch, a.roll);
+    drawBead(a.bx, a.by, r * 1.12, { active:true, roll:a.roll, now:now });
+  }
+}
+
+/* ---------------- input: tap, scroll, keyboard ---------------- */
+canvas.addEventListener('pointerdown', () => {
+  initAudio();
+  if(state.auto){ setAuto(false); note('Auto-prayer paused — tap a bead to continue on your own.'); }
+  else advance();
+});
+let wheelT = 0;
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const n = performance.now();
+  if(n - wheelT < 550 || state.animating || state.auto) return;
+  wheelT = n; initAudio(); advance();
+}, { passive:false });
+window.addEventListener('keydown', e => {
+  if(e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'ArrowDown'){
+    e.preventDefault(); initAudio();
+    if(state.auto) setAuto(false); else advance();
+  }
+  if(e.key === 'Escape' && !$('modal').hidden) closeModal();
+});
+
+/* ---------------- controls ---------------- */
+$('autoBtn').addEventListener('click', () => { initAudio(); setAuto(!state.auto); });
+document.querySelectorAll('#paceRow button').forEach(b => {
+  if(Number(b.dataset.pace) === state.pace) b.classList.add('on');
+  b.addEventListener('click', () => {
+    state.pace = Number(b.dataset.pace); store.set('pace', state.pace);
+    document.querySelectorAll('#paceRow button').forEach(x => x.classList.toggle('on', x === b));
+    if(state.auto){ clearTimeout(state.autoTimer); scheduleAuto(); }
+  });
+});
+$('ropeSize').value = String(state.ropeSize);
+$('ropeSize').addEventListener('change', e => {
+  state.ropeSize = Number(e.target.value); state.current = 0;
+  store.set('size', state.ropeSize); renderStats();
+  note('A rope of ' + state.ropeSize + ' beads. Begin gently.');
+});
+$('resetBtn').addEventListener('click', () => {
+  state.session = 0; state.rounds = 0; state.current = 0;
+  renderStats(); note('Counter reset — begin again, gently.');
+});
+const soundBtn = $('soundBtn');
+function renderSound(){
+  $('soundOnIcon').style.display = state.sound ? '' : 'none';
+  $('soundOffIcon').style.display = state.sound ? 'none' : '';
+  soundBtn.classList.toggle('off', !state.sound);
+}
+soundBtn.addEventListener('click', () => {
+  state.sound = !state.sound; store.set('sound', state.sound);
+  initAudio(); renderSound();
+  if(state.sound) knock();
+});
+renderSound();
+
+/* ---------------- info modal ---------------- */
+const TABS = [
+  { id:'prayer', label:'The Prayer', html: `
+    <h3>The Jesus Prayer</h3>
+    <blockquote>Lord Jesus Christ, Son of God,<br>have mercy on me, a sinner.</blockquote>
+    <p>One of the oldest and simplest prayers of the Christian East. In a single breath it holds a whole confession of faith &mdash; Jesus is <em>Lord</em>, He is the <em>Christ</em>, He is the <em>Son of God</em> &mdash; and joins it to the cry of the tax collector: <span class="verse">&ldquo;God, be merciful to me, a sinner&rdquo; (Luke 18:13).</span></p>
+    <p>Short enough to be prayed without ceasing. Deep enough to pray for a lifetime.</p>` },
+  { id:'roots', label:'Biblical Roots', html: `
+    <h3>Unceasing prayer in Scripture</h3>
+    <ul>
+      <li><strong>&ldquo;Pray without ceasing.&rdquo;</strong> <span class="verse">&mdash; 1 Thessalonians 5:17.</span> The apostle&rsquo;s command is the prayer&rsquo;s whole program: a prayer brief enough to live in the heart all day long.</li>
+      <li><strong>&ldquo;Jesus, Son of David, have mercy on me!&rdquo;</strong> <span class="verse">&mdash; the blind Bartimaeus, Mark 10:47&ndash;48.</span> He would not be silenced, and Jesus stood still and called him. The Church simply keeps his cry, addressed to Jesus by name.</li>
+      <li><strong>&ldquo;God, be merciful to me, a sinner.&rdquo;</strong> <span class="verse">&mdash; the tax collector, Luke 18:13,</span> who &ldquo;went down to his house justified.&rdquo; His humility is the prayer&rsquo;s closing word.</li>
+      <li><strong>&ldquo;Jesus, Master, have mercy on us.&rdquo;</strong> <span class="verse">&mdash; the ten lepers, Luke 17:13.</span></li>
+      <li><strong>The Holy Name itself:</strong> <span class="verse">&ldquo;Whatever you ask in My name, that I will do&rdquo; (John 14:13);</span> <span class="verse">&ldquo;at the name of Jesus every knee should bow&rdquo; (Philippians 2:10).</span> The prayer is, above all, the invocation of the Name.</li>
+      <li>It is not &ldquo;vain repetition&rdquo; <span class="verse">(Matthew 6:7)</span>: the words are few so that attention can gather &mdash; from the lips, into the mind, and at last into the heart.</li>
+    </ul>` },
+  { id:'history', label:'History', html: `
+    <h3>An Oriental Orthodox view</h3>
+    <p>The Jesus Prayer grew in the deserts of Egypt, among the <strong>Desert Fathers</strong> of the fourth century, who prayed short &ldquo;arrow prayers&rdquo; through day and night. Evagrius taught that prayer is the mind&rsquo;s unceasing conversation with God.</p>
+    <p><strong>St. Isaac the Syrian</strong> (7th century), beloved across the Oriental Orthodox world, wrote of stillness &mdash; <em>hesychia</em> &mdash; the mind gathered in from its wandering into the heart, where prayer continues even in sleep.</p>
+    <p><strong>St. John Chrysostom</strong> urged the faithful to keep the Name of Jesus on their lips &ldquo;at the table, at work, on the road.&rdquo;</p>
+    <p>The <strong>Philokalia</strong> (18th century) gathered centuries of this hesychast wisdom: the prayer said gently, often with the breath, until the heart itself learns to pray.</p>
+    <p>In the <strong>Armenian Church</strong>, St. Gregory of Narek (10th century) gave the tradition its most beloved voice: his <em>Book of Lamentations</em> &mdash; the Narek &mdash; is ninety-five prayers of a sinner begging God&rsquo;s mercy, prayed in Armenian homes for a thousand years. <em>&ldquo;Have mercy on me, a sinner&rdquo;</em> is, in a real sense, an Armenian prayer.</p>
+    <h3>The prayer rope</h3>
+    <p>Wool, for the flock of Christ; black, for mourning over sin; each knot woven with tiny crosses; the tassel, tradition says, for wiping the tears of repentance. Thirty-three knots for the years of Christ&rsquo;s earthly life &mdash; fifty, one hundred, three hundred for longer rules. Monks, and laypeople with them, have counted the prayer on such ropes for over a thousand years.</p>` },
+  { id:'how', label:'How to Pray', html: `
+    <h3>Begin gently</h3>
+    <p>Sit quietly. Let your shoulders fall. Say the words slowly &mdash; once for each bead &mdash; and let your attention rest on them, not on doing it perfectly.</p>
+    <p>There is no quota and no rush. Begin with a few beads. If the mind wanders, return gently; the Fathers say the returning itself is the prayer.</p>
+    <p>In auto-prayer mode, let the slow rhythm carry you like breathing. Tap a bead, scroll, or press <kbd>Space</kbd> whenever you wish to pray at your own pace instead.</p>
+    <p>However you pray &mdash; welcome. This page asks nothing of you but a quiet moment.</p>` },
+  { id:'about', label:'About', html: `
+    <h3>About this app</h3>
+    <p>This little app was made with reverence by <strong>Raphael Malikian</strong>, as a quiet corner of the internet for anyone drawn to the Jesus Prayer &mdash; of any church, or none yet. If it helps you pray, it has done its work.</p>
+    <p>GitHub: <a href="https://github.com/rtmalikian" target="_blank" rel="noopener">github.com/rtmalikian</a><br>
+    X: <a href="https://x.com/rtmalikian" target="_blank" rel="noopener">x.com/rtmalikian</a></p>
+    <p><em>Soli Deo gloria</em> &mdash; glory to God alone.</p>` }
+];
+const tabsEl = $('tabs'), bodyEl = $('tabBody');
+TABS.forEach((t, i) => {
+  const b = document.createElement('button');
+  b.className = 'tab' + (i === 0 ? ' on' : '');
+  b.textContent = t.label;
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    bodyEl.innerHTML = t.html;
+    bodyEl.parentElement.scrollTop = 0;
+  });
+  tabsEl.appendChild(b);
+});
+bodyEl.innerHTML = TABS[0].html;
+function openModal(){ $('modal').hidden = false; document.body.style.overflow = 'hidden'; }
+function closeModal(){ $('modal').hidden = true; document.body.style.overflow = ''; }
+$('infoBtn').addEventListener('click', openModal);
+$('closeModal').addEventListener('click', closeModal);
+$('modal').addEventListener('click', e => { if(e.target === $('modal')) closeModal(); });
+
+/* ---------------- init ---------------- */
+renderStats();
+resize();
+requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
