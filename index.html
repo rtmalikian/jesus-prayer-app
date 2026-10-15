@@ -606,14 +606,15 @@ function renderPrayer(){
   const el = $('prayerText');
   if(state.ropeStyle === 'rosary'){
     const s = rosaryStep(state.current);
+    const ww = t => t.split(/\s+/).map(w => '<span class="w">' + w + '</span>').join(' ');
     let h = '<span class="rtitle">' + s.title + '</span>';
     if(s.kind === 'mystery'){
       h += '<span class="rmyst">' + s.decade + ' ' + s.setName + ' Mystery &mdash; ' + s.mystery.t +
            '<span class="rref">' + s.mystery.s + ' &middot; ' + s.mystery.r + '</span></span>';
     }
-    h += '<span class="rtext">' + s.text + '</span>';
+    h += '<span class="rtext">' + ww(s.text) + '</span>';
     if(s.kind === 'hailMaryGlory'){
-      h += '<span class="rtitle">Glory Be</span><span class="rtext">' + RP.gloryBe + '</span>';
+      h += '<span class="rtitle">Glory Be</span><span class="rtext">' + ww(RP.gloryBe) + '</span>';
     }
     if(state.current === 0){
       const set = MYSTERIES[mysterySet()];
