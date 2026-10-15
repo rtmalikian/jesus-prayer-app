@@ -102,6 +102,14 @@ main{flex:1; display:flex; flex-direction:column; align-items:center; padding:4p
 .prayer .rmyst .rref{display:block; font-size:14px; color:var(--muted); margin-top:2px}
 .prayer .rtext{display:block; font-size:17px; line-height:1.6; color:var(--ink); font-style:normal; margin:6px 0}
 .prayer .rday{display:block; margin-top:10px; font-size:13px; color:var(--muted); font-style:italic}
+/* rosary mode: long prayers live in their own scroll box so the beads never shift;
+   the box follows the karaoke highlight as the words light up */
+.prayer.rosary-box{max-height:26vh; overflow-y:auto; overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch; scrollbar-width:thin;
+  text-align:left; background:rgba(217,169,79,.045);
+  border:1px solid rgba(217,169,79,.16); border-radius:14px;
+  padding:10px 12px; font-size:16px}
+.prayer.rosary-box .rtext{font-size:16px; line-height:1.55}
 @keyframes breath{0%{text-shadow:0 0 0 rgba(232,200,122,0)}35%{text-shadow:0 0 26px rgba(232,200,122,.6)}100%{text-shadow:0 0 0 rgba(232,200,122,0)}}
 .prayer-sub{margin:8px 0 0; font-style:italic; color:var(--muted); font-size:15px}
 .stage-wrap{position:relative; width:100%; height:clamp(280px, 40vh, 560px); margin-top:2px}
@@ -605,6 +613,7 @@ const JESUS_PRAYER_HTML = '<span class="w gold">Lord</span> <span class="w gold"
 function renderPrayer(){
   const el = $('prayerText');
   if(state.ropeStyle === 'rosary'){
+    el.classList.add('rosary-box');
     const s = rosaryStep(state.current);
     const ww = t => t.split(/\s+/).map(w => '<span class="w">' + w + '</span>').join(' ');
     let h = '<span class="rtitle">' + s.title + '</span>';
@@ -622,8 +631,10 @@ function renderPrayer(){
     }
     el.innerHTML = h;
   } else {
+    el.classList.remove('rosary-box');
     el.innerHTML = JESUS_PRAYER_HTML;
   }
+  el.scrollTop = 0;
 }
 let noteTimer = null;
 function note(msg, ms){
@@ -723,6 +734,13 @@ function tickKaraoke(now){
   if(idx !== k.last){
     k.last = idx;
     words.forEach((w, i) => w.classList.toggle('lit', i <= idx));
+    // keep the lit word visible inside the rosary's scroll box
+    const box = $('prayerText');
+    if(idx >= 0 && box.classList.contains('rosary-box')){
+      const wr = words[idx].getBoundingClientRect(), cr = box.getBoundingClientRect();
+      if(wr.bottom > cr.bottom) box.scrollTop += wr.bottom - cr.bottom + 10;
+      else if(wr.top < cr.top) box.scrollTop -= cr.top - wr.top + 10;
+    }
   }
   if(el >= k.dur){
     stopKaraoke();
