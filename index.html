@@ -132,6 +132,14 @@ select:disabled, .chip:disabled{opacity:.4; cursor:default}
   font-size:15px; opacity:0; transition:opacity .5s; pointer-events:none; white-space:nowrap}
 .note.show{opacity:1}
 .tally{display:flex; align-items:center; gap:clamp(20px,6vw,44px); margin-top:2px}
+/* rosary compact mode: the full rosary layout must fit one phone screen,
+   so the page sheds its subtitles and the canvas tightens up */
+.rosary-mode .prayer-sub{display:none}
+.rosary-mode .hint{display:none}
+.rosary-mode .stage-wrap{height:38vh}
+.rosary-mode .prayer.rosary-box{max-height:20vh}
+.rosary-mode .tally{margin-top:0}
+.rosary-mode .controls{margin-top:4px; gap:6px}
 .stat{display:flex; flex-direction:column; align-items:center}
 .stat .num{font-size:34px; font-weight:600; color:var(--gold-soft); line-height:1.1; font-variant-numeric:tabular-nums}
 .stat .lbl{font-family:system-ui,sans-serif; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); margin-top:4px}
@@ -509,14 +517,16 @@ function layout(){
   geo.ry = Math.min(H * 0.27, 200);
   geo.hx = W/2; geo.hy = H - 70;
   if(state.ropeStyle === 'rosary'){
-    // an actual rosary: 5-decade loop + hanging stem (1 large + 3 small beads) + crucifix
+    // an actual rosary: 5-decade loop + hanging stem (1 large + 3 small beads) + crucifix.
+    // on short stages the stem compresses so the loop keeps its room.
     const hy = H - 58;
     geo.hy = hy;
-    const crucH = 34, gap = 19;
-    const crucTop = hy - 62 - crucH;
+    const k = clamp((H - 150) / 150, 0.55, 1);
+    const crucH = 34 * k, gap = 19 * k, clear = 62 * k;
+    const crucTop = hy - clear - crucH;
     geo.crucCX = W/2; geo.crucCY = crucTop + crucH/2; geo.crucH = crucH;
     geo.stemX = W/2;
-    geo.stemY0 = crucTop - 10;
+    geo.stemY0 = crucTop - 10 * k;
     geo.stemGap = gap;
     const loopBottom = geo.stemY0 - 3*gap - 14;
     const topM = 8;
@@ -848,25 +858,26 @@ function finger(x1, y1, x2, y2, w){
 }
 
 /* a simple crucifix for the rosary stem: gold beams with a stylized corpus */
-function drawCrucifix(x, y){
-  const h = 38, w = 24;
+function drawCrucifix(x, y, h){
+  const s = (h || 38) / 38, w = 24;
   ctx.save();
-  const g = ctx.createLinearGradient(x - 3, 0, x + 3, 0);
+  ctx.translate(x, y); ctx.scale(s, s);
+  const g = ctx.createLinearGradient(-3, 0, 3, 0);
   g.addColorStop(0, '#8a6a2f'); g.addColorStop(0.5, '#e8c87a'); g.addColorStop(1, '#8a6a2f');
   ctx.fillStyle = g;
-  roundRectPath(x - 2.5, y - h/2, 5, h, 2.5); ctx.fill();
-  roundRectPath(x - w/2, y - h/2 + 9, w, 5, 2.5); ctx.fill();
+  roundRectPath(-2.5, -19, 5, 38, 2.5); ctx.fill();
+  roundRectPath(-w/2, -10, w, 5, 2.5); ctx.fill();
   ctx.fillStyle = '#a8843f';
-  ctx.beginPath(); ctx.arc(x, y - h/2 + 5.5, 2.6, 0, Math.PI * 2); ctx.fill();
-  roundRectPath(x - 1.6, y - h/2 + 8.5, 3.2, 13, 1.6); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, -13.5, 2.6, 0, Math.PI * 2); ctx.fill();
+  roundRectPath(-1.6, -10.5, 3.2, 13, 1.6); ctx.fill();
   ctx.strokeStyle = '#a8843f'; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(x - 6.5, y - h/2 + 11); ctx.lineTo(x + 6.5, y - h/2 + 11); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-6.5, -8); ctx.lineTo(6.5, -8); ctx.stroke();
   ctx.restore();
 }
 function drawPendant(x, y){
   // the pendant matches the rope style: cross, crucifix, imam bead + tassel, or guru bead + tassel
   const p = ROPE_STYLES[state.ropeStyle].pendant;
-  if(p === 'crucifix'){ drawCrucifix(x, y); return; }
+  if(p === 'crucifix'){ drawCrucifix(x, y, geo.crucH || 38); return; }
   if(p === 'cross'){
     // the exact same artwork as the header logo, rasterized — the pendant IS the logo cross
     const img = crossImgCache[state.cross];
@@ -1030,7 +1041,7 @@ function draw(now){
     ctx.save();
     ctx.strokeStyle = 'rgba(232,200,122,.9)'; ctx.lineWidth = 2;
     ctx.shadowColor = 'rgba(232,200,122,.85)'; ctx.shadowBlur = 18;
-    ctx.beginPath(); ctx.arc(geo.crucCX, geo.crucCY, 27, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(geo.crucCX, geo.crucCY, Math.max(20, (geo.crucH || 38) * 0.75), 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
   }
   if(a){
@@ -1094,6 +1105,10 @@ $('ropeSize').addEventListener('change', e => {
 });
 $('ropeStyle').value = state.ropeStyle;
 let crossBeforeRosary = null;
+function applyRosaryMode(){
+  // rosary compact mode: shed subtitles and tighten the canvas so the full rosary fits one screen
+  document.body.classList.toggle('rosary-mode', state.ropeStyle === 'rosary');
+}
 $('ropeStyle').addEventListener('change', e => {
   const prev = state.ropeStyle;
   state.ropeStyle = e.target.value; store.set('ropeStyle', state.ropeStyle);
@@ -1108,7 +1123,8 @@ $('ropeStyle').addEventListener('change', e => {
     crossBeforeRosary = null;
     note(ROPE_STYLES[state.ropeStyle].hint);
   }
-  layout(); renderRopeControls(); renderStats(); renderPrayer();
+  applyRosaryMode(); resize();
+  renderRopeControls(); renderStats(); renderPrayer();
 });
 const markerBtn = $('markerBtn');
 function renderMarker(){
@@ -1244,6 +1260,7 @@ function closeCrossModal(){ $('crossModal').hidden = true; document.body.style.o
 renderCross();
 renderStats();
 renderPrayer();
+applyRosaryMode();
 preloadCrossImages();
 resize();
 requestAnimationFrame(tick);
