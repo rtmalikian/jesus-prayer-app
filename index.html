@@ -95,6 +95,13 @@ main{flex:1; display:flex; flex-direction:column; align-items:center; padding:4p
 .prayer{margin:0; font-size:clamp(22px, 5.4vw, 38px); line-height:1.42; font-weight:500; color:var(--ink)}
 .prayer .name{color:var(--gold-soft)}
 .prayer.pulse{animation:breath 2s ease}
+/* rosary mode: each bead carries its own prayer, with the mystery of the day */
+.prayer .rtitle{display:block; font-size:13px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--gold-soft); font-style:normal; margin:8px 0 2px}
+.prayer .rmyst{display:block; font-size:19px; color:var(--gold); font-style:italic; margin:2px 0 8px}
+.prayer .rmyst .rref{display:block; font-size:14px; color:var(--muted); margin-top:2px}
+.prayer .rtext{display:block; font-size:17px; line-height:1.6; color:var(--ink); font-style:normal; margin:6px 0}
+.prayer .rday{display:block; margin-top:10px; font-size:13px; color:var(--muted); font-style:italic}
 @keyframes breath{0%{text-shadow:0 0 0 rgba(232,200,122,0)}35%{text-shadow:0 0 26px rgba(232,200,122,.6)}100%{text-shadow:0 0 0 rgba(232,200,122,0)}}
 .prayer-sub{margin:8px 0 0; font-style:italic; color:var(--muted); font-size:15px}
 .stage-wrap{position:relative; width:100%; height:clamp(280px, 40vh, 560px); margin-top:2px}
@@ -246,6 +253,7 @@ footer{position:relative; z-index:1; text-align:center; padding:10px 16px 14px; 
           <option value="misbaha">Misbaha</option>
           <option value="mala">Mala</option>
           <option value="anglican">Anglican</option>
+          <option value="tasbih">Tasbih</option>
         </select>
       </label>
       <button class="chip" id="markerBtn" aria-pressed="false" title="A larger, darker bead every 10 beads">Marker beads</button>
@@ -272,11 +280,11 @@ footer{position:relative; z-index:1; text-align:center; padding:10px 16px 14px; 
   </div>
 </div>
 
-<div class="modal" id="lordModal" hidden role="dialog" aria-modal="true" aria-label="The Lord's Prayer">
+<div class="modal" id="lordModal" hidden role="dialog" aria-modal="true" aria-label="Closing prayer">
   <div class="sheet">
-    <h2>The Lord&rsquo;s Prayer</h2>
-    <p class="lede">After the round &mdash; as the Church has always done.</p>
-    <blockquote class="lord-text">Our Father, who art in heaven, hallowed be thy name. Thy kingdom come, thy will be done, on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us. And lead us not into temptation, but deliver us from evil. For thine is the kingdom, and the power, and the glory, for ever and ever. Amen.</blockquote>
+    <h2 id="closingTitle">The Lord&rsquo;s Prayer</h2>
+    <p class="lede" id="closingLede">After the round &mdash; as the Church has always done.</p>
+    <blockquote class="lord-text" id="closingText"></blockquote>
     <div class="close-row"><button class="pill" id="amenBtn">Amen &mdash; continue</button></div>
   </div>
 </div>
@@ -352,7 +360,13 @@ const CROSSES = [
   { id:'ethiopian', name:'Ethiopian', sub:'Ethiopian Orthodox', art:
     '<path d="M12 3 L20 17 L12 31 L4 17 Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/>' +
     '<path d="M12 9v16M7.5 17h9" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
-    '<path d="M12 13.5 L15.5 17 L12 20.5 L8.5 17 Z" stroke="currentColor" stroke-width="1.6" fill="none"/>' }
+    '<path d="M12 13.5 L15.5 17 L12 20.5 L8.5 17 Z" stroke="currentColor" stroke-width="1.6" fill="none"/>' },
+  { id:'catholic', name:'Roman Catholic', sub:'Crucifix with corpus', art:
+    '<path d="M12 3v29M5.5 10h13" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+    '<circle cx="12" cy="6.6" r="1.9" fill="currentColor"/>' +
+    '<path d="M12 8.8c-.4 3-.4 5.2 0 8.2" stroke="currentColor" stroke-width="2.3" fill="none" stroke-linecap="round"/>' +
+    '<path d="M7.4 10.4c1.6.5 3 .7 4.6.7s3-.2 4.6-.7" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/>' +
+    '<path d="M12 17l-1.2 7.5M12 17l1.2 7.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/>' }
 ];
 if(!CROSSES.some(c => c.id === state.cross)) state.cross = 'armenian';
 // migrate older (slower) saved paces to the new faster ones
@@ -395,7 +409,9 @@ const ROPE_STYLES = {
   mala: { label:'Mala', pendant:'guru', palette:'rudraksha',
     hint:'Mala — with a guru bead marking the round.' },
   anglican: { label:'Anglican', pendant:'cross', palette:'wood',
-    hint:'Anglican — weeks of beads divided by larger cruciform beads.' }
+    hint:'Anglican — weeks of beads divided by larger cruciform beads.' },
+  tasbih: { label:'Tasbih', pendant:'cap', palette:'onyx',
+    hint:'Tasbih — prayer beads with a tassel; a larger bead marks every eleven.' }
 };
 if(!ROPE_STYLES[state.ropeStyle]) state.ropeStyle = 'komboskini';
 const PALETTES = {
@@ -403,11 +419,67 @@ const PALETTES = {
   rosewood:  ['#7d4a35', '#4e2c1e', '#281410'],
   amber:     ['#c98f3d', '#9a6420', '#5e3c10'],
   rudraksha: ['#7a5230', '#54371e', '#2c1c0e'],
+  onyx:      ['#2b2b32', '#17171b', '#08080a'],
   dark:      ['#453022', '#2a1c10', '#120b05']   // marker beads: larger and darker
 };
+/* ---------------- rosary prayers ----------------
+   The rosary opens at the crucifix and each bead carries its own prayer.
+   The mysteries follow the traditional days: Joyful Mon/Sat, Sorrowful
+   Tue/Fri, Glorious Wed/Sun, Luminous Thu. */
+const ROSARY_DAYS = {0:'glorious',1:'joyful',2:'sorrowful',3:'glorious',4:'luminous',5:'joyful',6:'sorrowful'};
+const MYSTERIES = {
+  joyful:{ name:'Joyful', days:'Mondays and Saturdays', items:[
+    {t:'The Annunciation', s:'Luke 1:26\u201338', r:'\u201CHail, full of grace, the Lord is with you.\u201D'},
+    {t:'The Visitation', s:'Luke 1:39\u201356', r:'\u201CMy soul magnifies the Lord.\u201D'},
+    {t:'The Nativity', s:'Luke 2:1\u201320', r:'\u201CGlory to God in the highest.\u201D'},
+    {t:'The Presentation', s:'Luke 2:22\u201340', r:'\u201CA light for revelation to the Gentiles.\u201D'},
+    {t:'The Finding in the Temple', s:'Luke 2:41\u201352', r:'\u201CDid you not know I must be in my Father\u2019s house?\u201D'} ]},
+  sorrowful:{ name:'Sorrowful', days:'Tuesdays and Fridays', items:[
+    {t:'The Agony in the Garden', s:'Matthew 26:36\u201346', r:'\u201CNot as I will, but as you will.\u201D'},
+    {t:'The Scourging at the Pillar', s:'John 19:1 · Isaiah 53:5', r:'\u201CBy his wounds we are healed.\u201D'},
+    {t:'The Crowning with Thorns', s:'Matthew 27:27\u201331', r:'\u201CHail, King of the Jews.\u201D'},
+    {t:'The Carrying of the Cross', s:'John 19:17', r:'He went out, bearing his own cross.'},
+    {t:'The Crucifixion', s:'Luke 23:33\u201349', r:'\u201CFather, forgive them.\u201D'} ]},
+  glorious:{ name:'Glorious', days:'Wednesdays and Sundays', items:[
+    {t:'The Resurrection', s:'Matthew 28:1\u201310', r:'\u201CHe is risen, as he said.\u201D'},
+    {t:'The Ascension', s:'Acts 1:6\u201311', r:'\u201CThis Jesus will come in the same way.\u201D'},
+    {t:'The Descent of the Holy Spirit', s:'Acts 2:1\u201311', r:'Tongues as of fire.'},
+    {t:'The Assumption', s:'Revelation 12:1', r:'A woman clothed with the sun.'},
+    {t:'The Coronation of Mary', s:'Revelation 12:1\u20135', r:'Queen of heaven and earth.'} ]},
+  luminous:{ name:'Luminous', days:'Thursdays', items:[
+    {t:'The Baptism of Jesus', s:'Matthew 3:13\u201317', r:'\u201CThis is my beloved Son.\u201D'},
+    {t:'The Wedding at Cana', s:'John 2:1\u201312', r:'\u201CDo whatever he tells you.\u201D'},
+    {t:'The Proclamation of the Kingdom', s:'Mark 1:14\u201315', r:'\u201CRepent, and believe in the gospel.\u201D'},
+    {t:'The Transfiguration', s:'Matthew 17:1\u20138', r:'\u201CListen to him.\u201D'},
+    {t:'The Institution of the Eucharist', s:'Matthew 26:26\u201328', r:'\u201CThis is my body; this is my blood.\u201D'} ]}
+};
+const RP = {
+  creed:'I believe in God, the Father almighty, Creator of heaven and earth, and in Jesus Christ, his only Son, our Lord, who was conceived by the Holy Spirit, born of the Virgin Mary, suffered under Pontius Pilate, was crucified, died and was buried; he descended into hell; on the third day he rose again from the dead; he ascended into heaven, and is seated at the right hand of God the Father almighty; from there he will come to judge the living and the dead. I believe in the Holy Spirit, the holy catholic Church, the communion of saints, the forgiveness of sins, the resurrection of the body, and life everlasting. Amen.',
+  ourFather:'Our Father, who art in heaven, hallowed be thy name; thy kingdom come; thy will be done on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us; and lead us not into temptation, but deliver us from evil. Amen.',
+  hailMary:'Hail Mary, full of grace, the Lord is with thee; blessed art thou among women, and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen.',
+  gloryBe:'Glory be to the Father, and to the Son, and to the Holy Spirit; as it was in the beginning, is now, and ever shall be, world without end. Amen.',
+  hailHolyQueen:'Hail, holy Queen, Mother of mercy, our life, our sweetness, and our hope. To thee do we cry, poor banished children of Eve; to thee do we send up our sighs, mourning and weeping in this valley of tears. Turn then, most gracious advocate, thine eyes of mercy toward us, and after this our exile show unto us the blessed fruit of thy womb, Jesus. O clement, O loving, O sweet Virgin Mary.'
+};
+const LORD_TEXT = 'Our Father, who art in heaven, hallowed be thy name. Thy kingdom come, thy will be done, on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us. And lead us not into temptation, but deliver us from evil. For thine is the kingdom, and the power, and the glory, for ever and ever. Amen.';
+function mysterySet(){ return ROSARY_DAYS[new Date().getDay()]; }
+function weekdayName(){ return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()]; }
+const ORDINALS = ['First','Second','Third','Fourth','Fifth'];
+/* rosary step i (0..59): 0 crucifix, 1 Our Father, 2-4 Hail Marys, then five decades of 11 */
+function rosaryStep(i){
+  if(i === 0) return { kind:'creed', title:'The Apostles\u2019 Creed', text: RP.creed };
+  if(i === 1) return { kind:'ourFather', title:'Our Father', text: RP.ourFather };
+  if(i < 5) return { kind:'hailMary', title:'Hail Mary', text: RP.hailMary };
+  const j = i - 5, d = Math.floor(j / 11), pos = j % 11;
+  const set = MYSTERIES[mysterySet()];
+  if(pos === 0) return { kind:'mystery', title:'Our Father', text: RP.ourFather,
+    setName: set.name, decade: ORDINALS[d], mystery: set.items[d] };
+  if(pos === 10) return { kind:'hailMaryGlory', title:'Hail Mary', text: RP.hailMary };
+  return { kind:'hailMary', title:'Hail Mary', text: RP.hailMary };
+}
 function isMarkerBead(i){
   const N = state.ropeSize, s = state.ropeStyle;
-  if(s === 'rosary') return i >= 4 && ((i - 4 + 1) % 11 === 0);   // Pater bead after each decade
+  if(s === 'rosary') return i >= 5 && ((i - 5) % 11 === 0);   // Pater bead at the start of each decade
+  if(s === 'tasbih') return (i + 1) % 11 === 0;               // separator every eleven beads
   if(s === 'anglican'){                                   // 4 cruciform beads, evenly spaced
     const step = N / 4;
     for(let k = 0; k < 4; k++) if(i === Math.round(k * step) % N) return true;
@@ -444,7 +516,7 @@ function layout(){
     geo.ry = Math.max(18, (loopBottom - topM)*0.48);
   }
 }
-function beadCount(){ return state.ropeStyle === 'rosary' ? 59 : state.ropeSize; }
+function beadCount(){ return state.ropeStyle === 'rosary' ? 60 : state.ropeSize; }
 function loopCount(){ return state.ropeStyle === 'rosary' ? 55 : beadCount(); }
 function resize(){
   const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -458,10 +530,11 @@ window.addEventListener('resize', resize);
 
 function beadPos(i){
   if(state.ropeStyle === 'rosary'){
-    // the stem: bead 0 is the large Our Father bead nearest the crucifix, 1-3 the small Hail Marys above it
-    if(i < 4) return { x: geo.stemX, y: geo.stemY0 - i * geo.stemGap };
-    // the loop: 55 beads, five decades of ten small + one large Pater, starting at the bottom junction
-    const j = i - 4, N = 55;
+    // step 0 is the crucifix itself; then the stem: 1 = large Our Father bead, 2-4 the small Hail Marys
+    if(i === 0) return { x: geo.crucCX, y: geo.crucCY };
+    if(i < 5) return { x: geo.stemX, y: geo.stemY0 - (i - 1) * geo.stemGap };
+    // the loop: 55 beads, five decades of ten small + one Pater, starting at the bottom junction
+    const j = i - 5, N = 55;
     const a = Math.PI/2 + (j / N) * Math.PI * 2;
     return { x: geo.cx + geo.rx * Math.cos(a), y: geo.cy + geo.ry * Math.sin(a) };
   }
@@ -525,6 +598,32 @@ function pulsePrayer(){
   const p = $('prayerText');
   p.classList.remove('pulse'); void p.offsetWidth; p.classList.add('pulse');
 }
+/* the prayer shown for the current bead: the Jesus Prayer, or the rosary's own prayers */
+const JESUS_PRAYER_HTML = '<span class="w gold">Lord</span> <span class="w gold">Jesus</span> <span class="w gold">Christ,</span><br>' +
+  '<span class="w">Son</span> <span class="w">of</span> <span class="w">God,</span><br>' +
+  '<span class="w">have</span> <span class="w">mercy</span> <span class="w">on</span> <span class="w">me,</span> <span class="w">a</span> <span class="w">sinner.</span>';
+function renderPrayer(){
+  const el = $('prayerText');
+  if(state.ropeStyle === 'rosary'){
+    const s = rosaryStep(state.current);
+    let h = '<span class="rtitle">' + s.title + '</span>';
+    if(s.kind === 'mystery'){
+      h += '<span class="rmyst">' + s.decade + ' ' + s.setName + ' Mystery &mdash; ' + s.mystery.t +
+           '<span class="rref">' + s.mystery.s + ' &middot; ' + s.mystery.r + '</span></span>';
+    }
+    h += '<span class="rtext">' + s.text + '</span>';
+    if(s.kind === 'hailMaryGlory'){
+      h += '<span class="rtitle">Glory Be</span><span class="rtext">' + RP.gloryBe + '</span>';
+    }
+    if(state.current === 0){
+      const set = MYSTERIES[mysterySet()];
+      h += '<span class="rday">Today is ' + weekdayName() + ' &mdash; the ' + set.name + ' Mysteries (' + set.days + ')</span>';
+    }
+    el.innerHTML = h;
+  } else {
+    el.innerHTML = JESUS_PRAYER_HTML;
+  }
+}
 let noteTimer = null;
 function note(msg, ms){
   const n = $('note');
@@ -557,6 +656,7 @@ function finishBead(){
   const wrapped = state.current >= beadCount();
   if(wrapped) state.current = 0;
   renderStats();
+  renderPrayer();
   state.animating = false; state.anim = null;
   if(wrapped) roundComplete();
   else if(state.auto) startKaraoke();
@@ -564,20 +664,28 @@ function finishBead(){
 function roundComplete(){
   state.rounds++;
   renderStats();
+  $('lordBtn').innerHTML = state.ropeStyle === 'rosary' ? 'Hail, Holy Queen' : 'The Lord&rsquo;s Prayer';
   $('roundMsg').classList.add('show');
   if(state.auto) setTimeout(dismissRound, 4000);
-  // manual mode waits for the user's choice: the Lord's Prayer, or continue
+  // manual mode waits for the user's choice: the closing prayer, or continue
 }
 function dismissRound(){
   $('roundMsg').classList.remove('show');
   if(state.auto) startKaraoke();
 }
-$('lordBtn').addEventListener('click', () => {
+/* the closing prayer after a round: the Lord's Prayer, or Hail Holy Queen after a rosary */
+function openClosingPrayer(){
+  const isR = state.ropeStyle === 'rosary';
+  $('closingTitle').innerHTML = isR ? 'Hail, Holy Queen' : 'The Lord&rsquo;s Prayer';
+  $('closingLede').innerHTML = isR ? 'After the rosary &mdash; as the Church has always done.'
+                                  : 'After the round &mdash; as the Church has always done.';
+  $('closingText').textContent = isR ? RP.hailHolyQueen : LORD_TEXT;
   if(state.auto) setAuto(false);
   $('roundMsg').classList.remove('show');
   $('lordModal').hidden = false;
   document.body.style.overflow = 'hidden';
-});
+}
+$('lordBtn').addEventListener('click', openClosingPrayer);
 $('contBtn').addEventListener('click', dismissRound);
 $('amenBtn').addEventListener('click', () => {
   $('lordModal').hidden = true;
@@ -760,6 +868,21 @@ function drawPendant(x, y){
       ctx.beginPath(); ctx.arc(x + k*6, y + h/2 + 32, 1.6, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(232,200,122,.8)'; ctx.fill();
     }
+  } else if(p === 'cap'){
+    // tasbih: a small gold cap bead with a flowing tassel
+    const g = ctx.createLinearGradient(x - 5, 0, x + 5, 0);
+    g.addColorStop(0, '#8a6a2f'); g.addColorStop(0.5, '#e8c87a'); g.addColorStop(1, '#8a6a2f');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, 5.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(217,169,79,.5)'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.strokeStyle = 'rgba(201,162,77,.75)'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+    for(let k = -3; k <= 3; k++){
+      ctx.beginPath(); ctx.moveTo(x, y + 7);
+      ctx.quadraticCurveTo(x + k*3.5, y + 22, x + k*5, y + 36);
+      ctx.stroke();
+      ctx.beginPath(); ctx.arc(x + k*5, y + 38, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(232,200,122,.8)'; ctx.fill();
+    }
   } else if(p === 'guru'){
     // mala: a larger guru bead with a short tassel
     const gr = beadRadius() * 1.7;
@@ -824,6 +947,15 @@ function drawMiniCross(x, y){
     ctx.beginPath();
     ctx.moveTo(x, y-3.5); ctx.lineTo(x+3.5, y); ctx.lineTo(x, y+3.5); ctx.lineTo(x-3.5, y);
     ctx.closePath(); ctx.stroke();
+  } else if(s === 'catholic'){
+    P(0,-13, 0,13); P(-6,-3, 6,-3);
+    D(0,-9.5, 2.1);
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x, y-7); ctx.lineTo(x, y+2); ctx.stroke();
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(x-4.6, y-3.5); ctx.lineTo(x+4.6, y-3.5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, y+2); ctx.lineTo(x-1.2, y+9);
+    ctx.moveTo(x, y+2); ctx.lineTo(x+1.2, y+9); ctx.stroke();
   }
   ctx.restore();
 }
@@ -856,8 +988,9 @@ function draw(now){
   const n = beadCount();
   for(let i = 0; i < n; i++){
     if(a && i === a.bead) continue;   // this bead is in the hand
+    if(isR && i === 0) continue;      // step 0 is the crucifix itself, drawn as the pendant
     const p = beadPos(i);
-    const mk = isR ? (i === 0 || isMarkerBead(i)) : isMarkerBead(i);
+    const mk = isR ? (i === 1 || isMarkerBead(i)) : isMarkerBead(i);
     const br = isR ? rosaryBeadR(i, r) : (mk ? r * 1.38 : r);
     drawBead(p.x, p.y, br, {
       prayed: i < state.current,
@@ -865,17 +998,25 @@ function draw(now){
       now: now, marker: mk, pal: pal
     });
   }
+  if(isR && state.current === 0 && !a){
+    // the opening step: the Apostles' Creed, prayed at the crucifix
+    ctx.save();
+    ctx.strokeStyle = 'rgba(232,200,122,.9)'; ctx.lineWidth = 2;
+    ctx.shadowColor = 'rgba(232,200,122,.85)'; ctx.shadowBlur = 18;
+    ctx.beginPath(); ctx.arc(geo.crucCX, geo.crucCY, 27, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
   if(a){
     if(a.phase !== 'travel') drawFingers(a.pinch, a.roll);
-    const mk = isR ? (a.bead === 0 || isMarkerBead(a.bead)) : isMarkerBead(a.bead);
-    const br = (isR ? rosaryBeadR(a.bead, r) : (mk ? r * 1.38 : r)) * 1.12;
-    drawBead(a.bx, a.by, br, { active:true, roll:a.roll, now:now, marker:mk, pal:pal });
+    const mk = isR ? (a.bead === 1 || isMarkerBead(a.bead)) : isMarkerBead(a.bead);
+    const br = (isR ? (a.bead === 0 ? r * 0.85 : rosaryBeadR(a.bead, r)) : (mk ? r * 1.38 : r)) * 1.12;
+    drawBead(a.bx, a.by, br, { active:true, roll:a.roll, now:now, marker: mk && a.bead !== 0, pal:pal });
   }
 }
 /* rosary bead sizing: the large Our Father bead, the three small Hail Marys, then the loop decades */
 function rosaryBeadR(i, r){
-  if(i === 0) return r * 1.35;
-  if(i < 4) return r * 0.95;
+  if(i === 1) return r * 1.35;
+  if(i < 5) return r * 0.95;
   return isMarkerBead(i) ? r * 1.38 : r;
 }
 
@@ -925,11 +1066,22 @@ $('ropeSize').addEventListener('change', e => {
   note('A rope of ' + state.ropeSize + ' beads. Begin gently.');
 });
 $('ropeStyle').value = state.ropeStyle;
+let crossBeforeRosary = null;
 $('ropeStyle').addEventListener('change', e => {
+  const prev = state.ropeStyle;
   state.ropeStyle = e.target.value; store.set('ropeStyle', state.ropeStyle);
   state.current = 0;   // bead indices change meaning between layouts
-  layout(); renderRopeControls(); renderStats();
-  note(ROPE_STYLES[state.ropeStyle].hint);
+  if(state.ropeStyle === 'rosary' && prev !== 'rosary'){
+    const set = MYSTERIES[mysterySet()];
+    let msg = 'Rosary \u2014 today the ' + set.name + ' Mysteries (' + set.days + ').';
+    if(state.cross !== 'catholic'){ crossBeforeRosary = state.cross; selectCross('catholic'); msg += ' Cross set to the crucifix.'; }
+    note(msg);
+  } else {
+    if(prev === 'rosary' && crossBeforeRosary && state.cross === 'catholic') selectCross(crossBeforeRosary);
+    crossBeforeRosary = null;
+    note(ROPE_STYLES[state.ropeStyle].hint);
+  }
+  layout(); renderRopeControls(); renderStats(); renderPrayer();
 });
 const markerBtn = $('markerBtn');
 function renderMarker(){
@@ -1007,7 +1159,7 @@ const TABS = [
     <h3>The prayer rope</h3>
     <p>Wool, for the flock of Christ; black, for mourning over sin; each knot woven with tiny crosses; the tassel, tradition says, for wiping the tears of repentance. Thirty-three knots for the years of Christ&rsquo;s earthly life &mdash; fifty, one hundred, three hundred for longer rules. Monks, and laypeople with them, have counted the prayer on such ropes for over a thousand years.</p>
     <h3>Other traditions, other beads</h3>
-    <p>Many others count their own prayers on their own beads &mdash; the Catholic rosary&rsquo;s five decades, the misbaha&rsquo;s ninety-nine names of God, the mala&rsquo;s one hundred and eight mantras, the Anglican thirty-three. You can try their shapes with the rope selector below the beads. The beads differ; the longing is the same, and all are welcome here.</p>` },
+    <p>Many others count their own prayers on their own beads &mdash; the Catholic rosary&rsquo;s five decades, the misbaha&rsquo;s ninety-nine names of God, the mala&rsquo;s one hundred and eight mantras, the Anglican thirty-three, the tasbih &mdash; known by that name across the Middle East, including among Armenians &mdash; with its tassel. You can try their shapes with the rope selector below the beads.</p>\n    <p>On the rosary, each bead carries its own prayer: the Apostles&rsquo; Creed at the crucifix, the Our Father on the large beads, the Hail Mary on the small, the Glory Be closing each decade &mdash; and each decade a mystery of Christ&rsquo;s life to contemplate, chosen by the day of the week (Joyful on Mondays and Saturdays, Sorrowful on Tuesdays and Fridays, Glorious on Wednesdays and Sundays, Luminous on Thursdays). The beads differ; the longing is the same, and all are welcome here.</p>` },
   { id:'how', label:'How to Pray', html: `
     <h3>Begin gently</h3>
     <p>Sit quietly. Let your shoulders fall. Say the words slowly &mdash; once for each bead &mdash; and let your attention rest on them, not on doing it perfectly.</p>
@@ -1064,6 +1216,7 @@ function closeCrossModal(){ $('crossModal').hidden = true; document.body.style.o
 })();
 renderCross();
 renderStats();
+renderPrayer();
 preloadCrossImages();
 resize();
 requestAnimationFrame(tick);
