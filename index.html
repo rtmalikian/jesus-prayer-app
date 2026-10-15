@@ -61,7 +61,17 @@ body{
 header, main, footer{position:relative; z-index:1}
 header{display:flex; align-items:center; justify-content:space-between; padding:16px 20px 4px}
 .brand{display:flex; align-items:center; gap:12px}
-.cross{width:26px; height:36px; color:var(--gold)}
+.cross{width:26px; height:38px; color:var(--gold); display:inline-flex; align-items:center}
+.cross svg{width:100%; height:100%}
+.cross-picker{display:flex; justify-content:center; gap:8px; padding:10px 12px 0; position:relative; z-index:1}
+.cross-opt{width:42px; height:48px; border-radius:12px; border:1px solid transparent; background:rgba(20,15,9,.55);
+  color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:6px}
+.cross-opt svg{width:22px; height:32px}
+.cross-opt.on{border-color:var(--gold); color:var(--gold-soft); background:rgba(217,169,79,.10);
+  box-shadow:0 0 14px rgba(217,169,79,.25)}
+.prayer .w{transition:color .25s ease, text-shadow .25s ease}
+.prayer .w.gold{color:var(--gold-soft)}
+.prayer .w.lit{color:#ffedbe; text-shadow:0 0 20px rgba(232,200,122,.9)}
 .brand h1{margin:0; font-size:27px; font-weight:600; letter-spacing:.04em; line-height:1}
 .brand p{margin:2px 0 0; font-size:13px; letter-spacing:.32em; text-transform:uppercase; color:var(--muted); font-family:system-ui, sans-serif; font-weight:400}
 .top-controls{display:flex; align-items:center; gap:10px}
@@ -154,9 +164,7 @@ footer{position:relative; z-index:1; text-align:center; padding:14px 16px 22px; 
 
 <header>
   <div class="brand">
-    <svg class="cross" viewBox="0 0 24 34" aria-hidden="true">
-      <path d="M12 3v29M6.5 10.5h11M8.5 6h7M9 24l6 3.2" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/>
-    </svg>
+    <span class="cross" id="logoCross" aria-hidden="true"></span>
     <div>
       <h1>Jesus Prayer</h1>
       <p>virtual prayer rope</p>
@@ -177,9 +185,11 @@ footer{position:relative; z-index:1; text-align:center; padding:14px 16px 22px; 
   </div>
 </header>
 
+<nav class="cross-picker" id="crossPicker" aria-label="Choose a cross"></nav>
+
 <main>
   <section class="prayer-card" aria-live="polite">
-    <p class="prayer" id="prayerText"><span class="name">Lord Jesus Christ</span>, Son of God,<br>have mercy on me, a sinner.</p>
+    <p class="prayer" id="prayerText"><span class="w gold">Lord</span> <span class="w gold">Jesus</span> <span class="w gold">Christ,</span><br><span class="w">Son</span> <span class="w">of</span> <span class="w">God,</span><br><span class="w">have</span> <span class="w">mercy</span> <span class="w">on</span> <span class="w">me,</span> <span class="w">a</span> <span class="w">sinner.</span></p>
     <p class="prayer-sub">said once for each bead &mdash; gently, from the heart</p>
   </section>
 
@@ -200,9 +210,9 @@ footer{position:relative; z-index:1; text-align:center; padding:14px 16px 22px; 
   <section class="controls">
     <button class="pill" id="autoBtn" aria-pressed="false">Auto-prayer &middot; Off</button>
     <div class="pace" id="paceRow" hidden>
-      <button data-pace="8000">Contemplative</button>
-      <button data-pace="5000">Steady</button>
-      <button data-pace="3500">Flowing</button>
+      <button data-pace="6000">Contemplative</button>
+      <button data-pace="4000">Steady</button>
+      <button data-pace="2500">Flowing</button>
     </div>
     <p class="hint" id="hint">Tap a bead &middot; scroll &middot; or press <kbd>Space</kbd> to pray the next bead</p>
   </section>
@@ -248,10 +258,53 @@ const state = {
   auto: false,
   pace: store.get('pace', 5000),
   sound: store.get('sound', true),
+  cross: store.get('cross', 'armenian'),
   animating: false,
   anim: null,
-  autoTimer: null
+  karaoke: null
 };
+
+/* ---------------- crosses ---------------- */
+const CROSSES = [
+  { id:'armenian', label:'Armenian Apostolic (Oriental Orthodox)', art:
+    '<path d="M12 5v25M5.5 13h13" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '<g fill="currentColor"><circle cx="12" cy="2.6" r="1.4"/><circle cx="10.2" cy="4.4" r="1.4"/><circle cx="13.8" cy="4.4" r="1.4"/>' +
+    '<circle cx="12" cy="32.4" r="1.4"/><circle cx="10.2" cy="30.6" r="1.4"/><circle cx="13.8" cy="30.6" r="1.4"/>' +
+    '<circle cx="3.1" cy="13" r="1.4"/><circle cx="4.9" cy="11.2" r="1.4"/><circle cx="4.9" cy="14.8" r="1.4"/>' +
+    '<circle cx="20.9" cy="13" r="1.4"/><circle cx="19.1" cy="11.2" r="1.4"/><circle cx="19.1" cy="14.8" r="1.4"/></g>' },
+  { id:'eastern', label:'Eastern Orthodox', art:
+    '<path d="M12 3v29M6.5 10.5h11M8.5 6h7M9 24l6 3.2" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/>' },
+  { id:'coptic', label:'Coptic Orthodox', art:
+    '<circle cx="12" cy="17" r="9.5" stroke="currentColor" stroke-width="2" fill="none"/>' +
+    '<path d="M12 10v14M5 17h14" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+    '<g fill="currentColor"><circle cx="12" cy="8" r="1.2"/><circle cx="10.4" cy="9.6" r="1.2"/><circle cx="13.6" cy="9.6" r="1.2"/>' +
+    '<circle cx="12" cy="26" r="1.2"/><circle cx="10.4" cy="24.4" r="1.2"/><circle cx="13.6" cy="24.4" r="1.2"/>' +
+    '<circle cx="3" cy="17" r="1.2"/><circle cx="4.6" cy="15.4" r="1.2"/><circle cx="4.6" cy="18.6" r="1.2"/>' +
+    '<circle cx="21" cy="17" r="1.2"/><circle cx="19.4" cy="15.4" r="1.2"/><circle cx="19.4" cy="18.6" r="1.2"/></g>' },
+  { id:'greek', label:'Greek Byzantine', art:
+    '<path d="M12 4v28M5 12.5h14" stroke="currentColor" stroke-width="3.4" fill="none" stroke-linecap="round"/>' },
+  { id:'ethiopian', label:'Ethiopian Orthodox', art:
+    '<path d="M12 3 L20 17 L12 31 L4 17 Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/>' +
+    '<path d="M12 9v16M7.5 17h9" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+    '<path d="M12 13.5 L15.5 17 L12 20.5 L8.5 17 Z" stroke="currentColor" stroke-width="1.6" fill="none"/>' }
+];
+if(!CROSSES.some(c => c.id === state.cross)) state.cross = 'armenian';
+// migrate older (slower) saved paces to the new faster ones
+const PACE_MAP = { 8000: 6000, 5000: 4000, 3500: 2500 };
+if(PACE_MAP[state.pace]){ state.pace = PACE_MAP[state.pace]; store.set('pace', state.pace); }
+
+function crossSVG(id){
+  const c = CROSSES.find(x => x.id === id) || CROSSES[0];
+  return '<svg viewBox="0 0 24 34" aria-hidden="true">' + c.art + '</svg>';
+}
+function renderCross(){
+  $('logoCross').innerHTML = crossSVG(state.cross);
+  document.querySelectorAll('.cross-opt').forEach(b =>
+    b.classList.toggle('on', b.dataset.cross === state.cross));
+}
+function selectCross(id){
+  state.cross = id; store.set('cross', id); renderCross();
+}
 
 /* ---------------- canvas & geometry ---------------- */
 const canvas = $('stage'), ctx = canvas.getContext('2d');
@@ -348,14 +401,16 @@ function countBead(){
   // the moment the bead rolls between finger and thumb, the prayer is said
   state.session++; state.total++;
   store.set('total', state.total);
-  renderStats(); pulsePrayer(); knock();
+  renderStats();
+  if(!state.auto) pulsePrayer();
+  knock();
 }
 function finishBead(){
   state.current++;
   renderStats();
   if(state.current >= state.ropeSize) roundComplete();
   state.animating = false; state.anim = null;
-  if(state.auto) scheduleAuto();
+  if(state.auto) startKaraoke();
 }
 function roundComplete(){
   state.rounds++;
@@ -369,12 +424,29 @@ function roundComplete(){
   }, 3000);
 }
 
-/* ---------------- auto-prayer ---------------- */
-function scheduleAuto(){
-  clearTimeout(state.autoTimer);
-  state.autoTimer = setTimeout(() => {
+/* ---------------- auto-prayer & karaoke ---------------- */
+const prayerWords = () => Array.from(document.querySelectorAll('#prayerText .w'));
+function clearLit(){ prayerWords().forEach(w => w.classList.remove('lit')); }
+function startKaraoke(){
+  clearLit();
+  const n = prayerWords().length;
+  state.karaoke = { t0: performance.now(), per: state.pace / n, dur: state.pace, last: -1 };
+}
+function stopKaraoke(){ state.karaoke = null; clearLit(); }
+function tickKaraoke(now){
+  const k = state.karaoke;
+  if(!k) return;
+  const words = prayerWords();
+  const el = now - k.t0;
+  const idx = Math.min(words.length - 1, Math.floor(el / k.per));
+  if(idx !== k.last){
+    k.last = idx;
+    words.forEach((w, i) => w.classList.toggle('lit', i <= idx));
+  }
+  if(el >= k.dur){
+    stopKaraoke();
     if(state.auto && !state.animating) advance();
-  }, state.pace);
+  }
 }
 function setAuto(on){
   state.auto = on;
@@ -383,8 +455,8 @@ function setAuto(on){
   b.setAttribute('aria-pressed', String(on));
   b.innerHTML = on ? 'Auto-prayer &middot; On' : 'Auto-prayer &middot; Off';
   $('paceRow').hidden = !on;
-  clearTimeout(state.autoTimer);
-  if(on) setTimeout(() => { if(state.auto && !state.animating) advance(); }, 700);
+  if(!on) stopKaraoke();
+  else setTimeout(() => { if(state.auto && !state.animating) advance(); }, 700);
 }
 
 /* ---------------- animation tick ---------------- */
@@ -416,6 +488,7 @@ function tick(now){
       if(el >= DUR.release) finishBead();
     }
   }
+  tickKaraoke(now);
   draw(now);
   requestAnimationFrame(tick);
 }
@@ -485,14 +558,39 @@ function drawFingers(pinch, roll){
 }
 
 function drawMiniCross(x, y){
+  // the rope's cross always matches the selected main cross
+  const s = state.cross;
   ctx.save();
-  ctx.strokeStyle = 'rgba(217,169,79,.75)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(x, y - 13); ctx.lineTo(x, y + 13);
-  ctx.moveTo(x - 6, y - 6); ctx.lineTo(x + 6, y - 6);
-  ctx.moveTo(x - 9, y + 1); ctx.lineTo(x + 9, y + 1);
-  ctx.moveTo(x - 6, y + 8); ctx.lineTo(x + 6, y + 10.5);
-  ctx.stroke();
+  ctx.strokeStyle = 'rgba(217,169,79,.8)';
+  ctx.fillStyle = 'rgba(217,169,79,.8)';
+  ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const P = (x1,y1,x2,y2) => { ctx.beginPath(); ctx.moveTo(x+x1, y+y1); ctx.lineTo(x+x2, y+y2); ctx.stroke(); };
+  const D = (dx,dy,r) => { ctx.beginPath(); ctx.arc(x+dx, y+dy, r, 0, Math.PI*2); ctx.fill(); };
+  if(s === 'armenian'){
+    P(0,-11, 0,11); P(-7,0, 7,0);
+    [[0,-11],[0,11],[-7,0],[7,0]].forEach(pt => {
+      D(pt[0], pt[1]-2.4, 1.25); D(pt[0]-1.5, pt[1]-0.5, 1.25); D(pt[0]+1.5, pt[1]-0.5, 1.25);
+    });
+  } else if(s === 'eastern'){
+    P(0,-13, 0,13); P(-5.5,-6.5, 5.5,-6.5); P(-3.5,-11, 3.5,-11); P(-3,7, 3,9.4);
+  } else if(s === 'coptic'){
+    ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI*2); ctx.stroke();
+    P(0,-7, 0,7); P(-7,0, 7,0);
+    [[0,-7],[0,7],[-7,0],[7,0]].forEach(pt => {
+      D(pt[0], pt[1]-1.7, 1.05); D(pt[0]-1.2, pt[1]-0.3, 1.05); D(pt[0]+1.2, pt[1]-0.3, 1.05);
+    });
+  } else if(s === 'greek'){
+    ctx.lineWidth = 3;
+    P(0,-13, 0,13); P(-7,-4.5, 7,-4.5);
+  } else if(s === 'ethiopian'){
+    ctx.beginPath();
+    ctx.moveTo(x, y-13); ctx.lineTo(x+8, y); ctx.lineTo(x, y+13); ctx.lineTo(x-8, y);
+    ctx.closePath(); ctx.stroke();
+    P(0,-8, 0,8); P(-4.5,0, 4.5,0);
+    ctx.beginPath();
+    ctx.moveTo(x, y-3.5); ctx.lineTo(x+3.5, y); ctx.lineTo(x, y+3.5); ctx.lineTo(x-3.5, y);
+    ctx.closePath(); ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -502,7 +600,7 @@ function draw(now){
   ctx.beginPath();
   ctx.ellipse(geo.cx, geo.cy, geo.rx, geo.ry, 0, 0, Math.PI * 2);
   ctx.strokeStyle = 'rgba(217,169,79,.26)'; ctx.lineWidth = 2; ctx.stroke();
-  drawMiniCross(geo.cx, geo.cy - geo.ry - 16);
+  drawMiniCross(geo.cx, geo.cy - geo.ry - 20);
 
   const r = beadRadius(), a = state.anim;
   for(let i = 0; i < state.ropeSize; i++){
@@ -548,7 +646,7 @@ document.querySelectorAll('#paceRow button').forEach(b => {
   b.addEventListener('click', () => {
     state.pace = Number(b.dataset.pace); store.set('pace', state.pace);
     document.querySelectorAll('#paceRow button').forEach(x => x.classList.toggle('on', x === b));
-    if(state.auto){ clearTimeout(state.autoTimer); scheduleAuto(); }
+    if(state.auto && !state.animating) startKaraoke();
   });
 });
 $('ropeSize').value = String(state.ropeSize);
@@ -580,7 +678,11 @@ const TABS = [
     <h3>The Jesus Prayer</h3>
     <blockquote>Lord Jesus Christ, Son of God,<br>have mercy on me, a sinner.</blockquote>
     <p>One of the oldest and simplest prayers of the Christian East. In a single breath it holds a whole confession of faith &mdash; Jesus is <em>Lord</em>, He is the <em>Christ</em>, He is the <em>Son of God</em> &mdash; and joins it to the cry of the tax collector: <span class="verse">&ldquo;God, be merciful to me, a sinner&rdquo; (Luke 18:13).</span></p>
-    <p>Short enough to be prayed without ceasing. Deep enough to pray for a lifetime.</p>` },
+    <p>Short enough to be prayed without ceasing. Deep enough to pray for a lifetime.</p>
+    <h3>A sword and a shield</h3>
+    <p>The Fathers speak of the Jesus Prayer as both a <strong>sword</strong> and a <strong>shield</strong> &mdash; St. Paul&rsquo;s own imagery: <span class="verse">&ldquo;the shield of faith&rdquo; and &ldquo;the sword of the Spirit, which is the word of God&rdquo; (Ephesians 6:16&ndash;17).</span></p>
+    <p>As a <strong>sword</strong>, the invoked Name cuts through the thoughts that ambush us &mdash; anxiety, anger, resentment, despair. St. Hesychios the Priest teaches in the <em>Philokalia</em> to meet each intrusive thought the moment it appears with the Name of Jesus, before it can take root. As a <strong>shield</strong>, the prayer becomes a covering carried through the day: <span class="verse">&ldquo;The name of the L<span style="font-variant:small-caps">ord</span> is a strong tower; the righteous run to it and are safe&rdquo; (Proverbs 18:10).</span></p>
+    <p>It is not the syllables that protect, but the Person named &mdash; and the humility of the one who asks for mercy.</p>` },
   { id:'roots', label:'Biblical Roots', html: `
     <h3>Unceasing prayer in Scripture</h3>
     <ul>
@@ -634,6 +736,20 @@ $('closeModal').addEventListener('click', closeModal);
 $('modal').addEventListener('click', e => { if(e.target === $('modal')) closeModal(); });
 
 /* ---------------- init ---------------- */
+(function buildCrossPicker(){
+  const nav = $('crossPicker');
+  CROSSES.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'cross-opt';
+    b.dataset.cross = c.id;
+    b.title = c.label;
+    b.setAttribute('aria-label', c.label);
+    b.innerHTML = crossSVG(c.id);
+    b.addEventListener('click', () => { initAudio(); selectCross(c.id); });
+    nav.appendChild(b);
+  });
+})();
+renderCross();
 renderStats();
 resize();
 requestAnimationFrame(tick);
