@@ -102,7 +102,15 @@ main{flex:1; display:flex; flex-direction:column; align-items:center; padding:4p
   background:rgba(16,12,7,.92); border:1px solid var(--line); border-radius:16px; padding:18px 26px;
   text-align:center; font-size:21px; font-style:italic; color:var(--gold-soft);
   opacity:0; pointer-events:none; transition:opacity .6s ease, transform .6s ease}
-.round-msg.show{opacity:1; transform:translate(-50%,-50%) scale(1)}
+.round-msg.show{opacity:1; transform:translate(-50%,-50%) scale(1); pointer-events:auto}
+.round-btns{display:flex; gap:10px; justify-content:center; margin-top:14px; flex-wrap:wrap}
+.pill.small{padding:9px 22px; font-size:16px}
+.lord-text{margin:16px 0; padding:14px 20px; border-left:2px solid var(--gold); font-style:italic;
+  font-size:22px; line-height:1.8; color:var(--ink); background:rgba(217,169,79,.06); border-radius:0 12px 12px 0}
+.rope-opts{display:flex; align-items:center; justify-content:center; gap:10px}
+.chip{background:none; border:1px solid var(--line); color:var(--muted); border-radius:999px; padding:8px 16px;
+  font-family:system-ui,sans-serif; font-size:12.5px; letter-spacing:.04em; cursor:pointer}
+.chip.on{color:#1c130a; background:var(--gold-soft); border-color:var(--gold-soft); font-weight:600}
 .note{position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-style:italic; color:var(--muted);
   font-size:15px; opacity:0; transition:opacity .5s; pointer-events:none; white-space:nowrap}
 .note.show{opacity:1}
@@ -210,7 +218,13 @@ footer{position:relative; z-index:1; text-align:center; padding:10px 16px 14px; 
 
   <div class="stage-wrap">
     <canvas id="stage" aria-label="Virtual prayer rope. Activate to pray the next bead."></canvas>
-    <div class="round-msg" id="roundMsg">Glory to God &mdash; one round complete.<br><span style="font-size:16px">Rest a moment, or continue.</span></div>
+    <div class="round-msg" id="roundMsg">
+      <p style="margin:0">Glory to God &mdash; one round complete.</p>
+      <div class="round-btns">
+        <button class="pill small" id="lordBtn">The Lord&rsquo;s Prayer</button>
+        <button class="ghost" id="contBtn">Continue</button>
+      </div>
+    </div>
     <div class="note" id="note"></div>
   </div>
 
@@ -223,6 +237,18 @@ footer{position:relative; z-index:1; text-align:center; padding:10px 16px 14px; 
   <div class="progress" aria-hidden="true"><div class="bar" id="roundBar"></div></div>
 
   <section class="controls">
+    <div class="rope-opts">
+      <label class="rope-label">Rope
+        <select id="ropeStyle" aria-label="Prayer bead style">
+          <option value="komboskini">Komboskini</option>
+          <option value="rosary">Rosary</option>
+          <option value="misbaha">Misbaha</option>
+          <option value="mala">Mala</option>
+          <option value="anglican">Anglican</option>
+        </select>
+      </label>
+      <button class="chip" id="markerBtn" aria-pressed="false" title="A larger, darker bead every 10 beads">Marker beads</button>
+    </div>
     <button class="pill" id="autoBtn" aria-pressed="false">Auto-prayer &middot; Off</button>
     <div class="pace" id="paceRow" hidden>
       <button data-pace="6000">Contemplative</button>
@@ -242,6 +268,15 @@ footer{position:relative; z-index:1; text-align:center; padding:10px 16px 14px; 
     <div class="tabs" id="tabs"></div>
     <div class="tab-body" id="tabBody"></div>
     <div class="close-row"><button class="pill" id="closeModal">Close</button></div>
+  </div>
+</div>
+
+<div class="modal" id="lordModal" hidden role="dialog" aria-modal="true" aria-label="The Lord's Prayer">
+  <div class="sheet">
+    <h2>The Lord&rsquo;s Prayer</h2>
+    <p class="lede">After the round &mdash; as the Church has always done.</p>
+    <blockquote class="lord-text">Our Father, who art in heaven, hallowed be thy name. Thy kingdom come, thy will be done, on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us. And lead us not into temptation, but deliver us from evil. For thine is the kingdom, and the power, and the glory, for ever and ever. Amen.</blockquote>
+    <div class="close-row"><button class="pill" id="amenBtn">Amen &mdash; continue</button></div>
   </div>
 </div>
 
@@ -277,6 +312,8 @@ const state = {
   auto: false,
   pace: store.get('pace', 5000),
   mode: _savedMode,
+  ropeStyle: store.get('ropeStyle', 'komboskini'),
+  markers: store.get('markers', false),
   cross: store.get('cross', 'armenian'),
   animating: false,
   anim: null,
@@ -286,11 +323,11 @@ const state = {
 /* ---------------- crosses ---------------- */
 const CROSSES = [
   { id:'armenian', label:'Armenian Apostolic (Oriental Orthodox)', art:
-    '<path d="M12 5v25M5.5 13h13" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>' +
-    '<g fill="currentColor"><circle cx="12" cy="2.6" r="1.4"/><circle cx="10.2" cy="4.4" r="1.4"/><circle cx="13.8" cy="4.4" r="1.4"/>' +
-    '<circle cx="12" cy="32.4" r="1.4"/><circle cx="10.2" cy="30.6" r="1.4"/><circle cx="13.8" cy="30.6" r="1.4"/>' +
-    '<circle cx="3.1" cy="13" r="1.4"/><circle cx="4.9" cy="11.2" r="1.4"/><circle cx="4.9" cy="14.8" r="1.4"/>' +
-    '<circle cx="20.9" cy="13" r="1.4"/><circle cx="19.1" cy="11.2" r="1.4"/><circle cx="19.1" cy="14.8" r="1.4"/></g>' },
+    '<path d="M12 6v23M6 13.5h12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '<g fill="currentColor"><circle cx="12" cy="3.4" r="2.1"/><circle cx="10" cy="5.2" r="2.1"/><circle cx="14" cy="5.2" r="2.1"/>' +
+    '<circle cx="12" cy="31.6" r="2.1"/><circle cx="10" cy="29.8" r="2.1"/><circle cx="14" cy="29.8" r="2.1"/>' +
+    '<circle cx="3.4" cy="13.5" r="2.1"/><circle cx="5.2" cy="11.5" r="2.1"/><circle cx="5.2" cy="15.5" r="2.1"/>' +
+    '<circle cx="20.6" cy="13.5" r="2.1"/><circle cx="18.8" cy="11.5" r="2.1"/><circle cx="18.8" cy="15.5" r="2.1"/></g>' },
   { id:'eastern', label:'Eastern Orthodox', art:
     '<path d="M12 3v29M6.5 10.5h11M8.5 6h7M9 24l6 3.2" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/>' },
   { id:'coptic', label:'Coptic Orthodox', art:
@@ -324,6 +361,39 @@ function renderCross(){
 }
 function selectCross(id){
   state.cross = id; store.set('cross', id); renderCross();
+}
+
+/* ---------------- prayer-bead styles ---------------- */
+const ROPE_STYLES = {
+  komboskini: { label:'Komboskini', pendant:'cross', palette:'wood',
+    hint:'Komboskini — the Orthodox knotted rope.' },
+  rosary: { label:'Rosary', pendant:'cross', palette:'rosewood',
+    hint:'Rosary — decades of ten with a larger Pater bead between them.' },
+  misbaha: { label:'Misbaha', pendant:'tassel', palette:'amber',
+    hint:'Misbaha — amber beads with an imam bead and tassel.' },
+  mala: { label:'Mala', pendant:'guru', palette:'rudraksha',
+    hint:'Mala — with a guru bead marking the round.' },
+  anglican: { label:'Anglican', pendant:'cross', palette:'wood',
+    hint:'Anglican — weeks of beads divided by larger cruciform beads.' }
+};
+if(!ROPE_STYLES[state.ropeStyle]) state.ropeStyle = 'komboskini';
+const PALETTES = {
+  wood:      ['#8a5f3a', '#5a3a22', '#2c1a0e'],
+  rosewood:  ['#7d4a35', '#4e2c1e', '#281410'],
+  amber:     ['#c98f3d', '#9a6420', '#5e3c10'],
+  rudraksha: ['#7a5230', '#54371e', '#2c1c0e'],
+  dark:      ['#453022', '#2a1c10', '#120b05']   // marker beads: larger and darker
+};
+function isMarkerBead(i){
+  const N = state.ropeSize, s = state.ropeStyle;
+  if(s === 'rosary') return (i + 1) % 11 === 0;          // Pater bead after each decade
+  if(s === 'anglican'){                                   // 4 cruciform beads, evenly spaced
+    const step = N / 4;
+    for(let k = 0; k < 4; k++) if(i === Math.round(k * step) % N) return true;
+    return false;
+  }
+  if(s === 'komboskini' && state.markers) return (i + 1) % 10 === 0;
+  return false;
 }
 
 /* ---------------- canvas & geometry ---------------- */
@@ -437,22 +507,39 @@ function countBead(){
 }
 function finishBead(){
   state.current++;
+  const wrapped = state.current >= state.ropeSize;
+  if(wrapped) state.current = 0;
   renderStats();
-  if(state.current >= state.ropeSize) roundComplete();
   state.animating = false; state.anim = null;
-  if(state.auto) startKaraoke();
+  if(wrapped) roundComplete();
+  else if(state.auto) startKaraoke();
 }
 function roundComplete(){
   state.rounds++;
   renderStats();
-  const m = $('roundMsg');
-  m.classList.add('show');
-  setTimeout(() => {
-    state.current = 0;
-    renderStats();
-    m.classList.remove('show');
-  }, 3000);
+  $('roundMsg').classList.add('show');
+  if(state.auto) setTimeout(dismissRound, 4000);
+  // manual mode waits for the user's choice: the Lord's Prayer, or continue
 }
+function dismissRound(){
+  $('roundMsg').classList.remove('show');
+  if(state.auto) startKaraoke();
+}
+$('lordBtn').addEventListener('click', () => {
+  if(state.auto) setAuto(false);
+  $('roundMsg').classList.remove('show');
+  $('lordModal').hidden = false;
+  document.body.style.overflow = 'hidden';
+});
+$('contBtn').addEventListener('click', dismissRound);
+$('amenBtn').addEventListener('click', () => {
+  $('lordModal').hidden = true;
+  document.body.style.overflow = '';
+  dismissRound();
+});
+$('lordModal').addEventListener('click', e => {
+  if(e.target === $('lordModal')){ $('lordModal').hidden = true; document.body.style.overflow = ''; }
+});
 
 /* ---------------- auto-prayer & karaoke ---------------- */
 const prayerWords = () => Array.from(document.querySelectorAll('#prayerText .w'));
@@ -536,6 +623,7 @@ function roundRectPath(x, y, w, h, rad){
 
 function drawBead(x, y, r, o){
   o = o || {};
+  const pal = o.marker ? PALETTES.dark : (o.pal || PALETTES.wood);
   if(o.active){
     const pulse = 0.5 + 0.5 * Math.sin((o.now || 0) / 620);
     const g = ctx.createRadialGradient(x, y, r * 0.5, x, y, r * 2.7);
@@ -545,8 +633,7 @@ function drawBead(x, y, r, o){
     ctx.beginPath(); ctx.arc(x, y, r * 2.7, 0, Math.PI * 2); ctx.fill();
   }
   const wg = ctx.createRadialGradient(x - r*0.35, y - r*0.4, r*0.12, x, y, r);
-  if(o.prayed){ wg.addColorStop(0, '#5d3f27'); wg.addColorStop(0.55, '#3a2515'); wg.addColorStop(1, '#1c1009'); }
-  else { wg.addColorStop(0, '#8a5f3a'); wg.addColorStop(0.55, '#5a3a22'); wg.addColorStop(1, '#2c1a0e'); }
+  wg.addColorStop(0, pal[0]); wg.addColorStop(0.55, pal[1]); wg.addColorStop(1, pal[2]);
   ctx.fillStyle = wg;
   ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
   ctx.lineWidth = 1.2;
@@ -559,6 +646,10 @@ function drawBead(x, y, r, o){
   ctx.lineWidth = Math.max(1.4, r * 0.16); ctx.lineCap = 'round'; ctx.stroke();
   ctx.beginPath(); ctx.arc(x - r*0.30, y - r*0.36, Math.max(1, r*0.11), 0, Math.PI*2);
   ctx.fillStyle = 'rgba(255,244,220,.45)'; ctx.fill();
+  if(o.prayed){
+    ctx.fillStyle = 'rgba(8,5,2,.42)';
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
 }
 
 function finger(x1, y1, x2, y2, w){
@@ -571,6 +662,45 @@ function finger(x1, y1, x2, y2, w){
   roundRectPath(0, -w/2, len + w * 0.35, w, w/2);
   ctx.fill();
   ctx.strokeStyle = 'rgba(70,38,20,.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.restore();
+}
+
+function drawPendant(x, y){
+  // the pendant matches the rope style: cross, imam bead + tassel, or guru bead + tassel
+  const p = ROPE_STYLES[state.ropeStyle].pendant;
+  if(p === 'cross'){ drawMiniCross(x, y); return; }
+  ctx.save();
+  if(p === 'tassel'){
+    // misbaha: elongated imam bead with a hanging tassel
+    const w = 13, h = 22;
+    const g = ctx.createLinearGradient(x - w/2, 0, x + w/2, 0);
+    g.addColorStop(0, '#8a5a24'); g.addColorStop(0.5, '#c98f3d'); g.addColorStop(1, '#7a4e1e');
+    ctx.fillStyle = g;
+    roundRectPath(x - w/2, y - h/2, w, h, w/2); ctx.fill();
+    ctx.strokeStyle = 'rgba(217,169,79,.4)'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.strokeStyle = 'rgba(217,169,79,.55)'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    for(let k = -2; k <= 2; k++){
+      ctx.beginPath(); ctx.moveTo(x, y + h/2 + 2);
+      ctx.quadraticCurveTo(x + k*4, y + h/2 + 16, x + k*6, y + h/2 + 30);
+      ctx.stroke();
+      ctx.beginPath(); ctx.arc(x + k*6, y + h/2 + 32, 1.6, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(232,200,122,.8)'; ctx.fill();
+    }
+  } else if(p === 'guru'){
+    // mala: a larger guru bead with a short tassel
+    const gr = beadRadius() * 1.7;
+    const gg = ctx.createRadialGradient(x - gr*0.35, y - gr*0.4, gr*0.12, x, y, gr);
+    gg.addColorStop(0, '#8a5f3a'); gg.addColorStop(0.55, '#5a3a22'); gg.addColorStop(1, '#2c1a0e');
+    ctx.fillStyle = gg;
+    ctx.beginPath(); ctx.arc(x, y, gr, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(217,169,79,.5)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.strokeStyle = 'rgba(217,169,79,.55)'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    for(let k = -1; k <= 1; k++){
+      ctx.beginPath(); ctx.moveTo(x, y + gr);
+      ctx.quadraticCurveTo(x + k*4, y + gr + 12, x + k*5, y + gr + 22);
+      ctx.stroke();
+    }
+  }
   ctx.restore();
 }
 
@@ -597,9 +727,9 @@ function drawMiniCross(x, y){
   const P = (x1,y1,x2,y2) => { ctx.beginPath(); ctx.moveTo(x+x1, y+y1); ctx.lineTo(x+x2, y+y2); ctx.stroke(); };
   const D = (dx,dy,r) => { ctx.beginPath(); ctx.arc(x+dx, y+dy, r, 0, Math.PI*2); ctx.fill(); };
   if(s === 'armenian'){
-    P(0,-11, 0,11); P(-7,0, 7,0);
-    [[0,-11],[0,11],[-7,0],[7,0]].forEach(pt => {
-      D(pt[0], pt[1]-2.4, 1.25); D(pt[0]-1.5, pt[1]-0.5, 1.25); D(pt[0]+1.5, pt[1]-0.5, 1.25);
+    P(0,-10, 0,10); P(-6.5,0, 6.5,0);
+    [[0,-10],[0,10],[-6.5,0],[6.5,0]].forEach(pt => {
+      D(pt[0], pt[1]-2.6, 2.0); D(pt[0]-1.9, pt[1]-0.7, 2.0); D(pt[0]+1.9, pt[1]-0.7, 2.0);
     });
   } else if(s === 'eastern'){
     P(0,-13, 0,13); P(-5.5,-6.5, 5.5,-6.5); P(-3.5,-11, 3.5,-11); P(-3,7, 3,9.4);
@@ -630,30 +760,36 @@ function draw(now){
   ctx.beginPath();
   ctx.ellipse(geo.cx, geo.cy, geo.rx, geo.ry, 0, 0, Math.PI * 2);
   ctx.strokeStyle = 'rgba(217,169,79,.26)'; ctx.lineWidth = 2; ctx.stroke();
-  // the cross pendant hangs at the bottom of the loop, as on a real prayer rope
-  drawMiniCross(geo.cx, geo.cy + geo.ry + 22);
+  // the pendant hangs at the bottom of the loop, as on a real prayer rope
+  drawPendant(geo.cx, geo.cy + geo.ry + 22);
 
   const r = beadRadius(), a = state.anim;
+  const pal = PALETTES[ROPE_STYLES[state.ropeStyle].palette];
   for(let i = 0; i < state.ropeSize; i++){
     if(a && i === a.bead) continue;   // this bead is in the hand
-    const p = beadPos(i);
-    drawBead(p.x, p.y, r, {
+    const p = beadPos(i), mk = isMarkerBead(i);
+    drawBead(p.x, p.y, mk ? r * 1.38 : r, {
       prayed: i < state.current,
       active: i === state.current && !a,
-      now: now
+      now: now, marker: mk, pal: pal
     });
   }
   if(a){
     if(a.phase !== 'travel') drawFingers(a.pinch, a.roll);
-    drawBead(a.bx, a.by, r * 1.12, { active:true, roll:a.roll, now:now });
+    const mk = isMarkerBead(a.bead);
+    drawBead(a.bx, a.by, (mk ? r * 1.38 : r) * 1.12, { active:true, roll:a.roll, now:now, marker:mk, pal:pal });
   }
 }
 
 /* ---------------- input: tap, scroll, keyboard ---------------- */
 canvas.addEventListener('pointerdown', () => {
   initAudio();
-  if(state.auto){ setAuto(false); note('Auto-prayer paused — tap a bead to continue on your own.'); }
-  else advance();
+  if(!$('roundMsg').classList.contains('show')){
+    if(state.auto){ setAuto(false); note('Auto-prayer paused — tap a bead to continue on your own.'); }
+    else advance();
+  } else {
+    dismissRound();
+  }
 });
 let wheelT = 0;
 canvas.addEventListener('wheel', e => {
@@ -669,6 +805,7 @@ window.addEventListener('keydown', e => {
   }
   if(e.key === 'Escape'){
     if(!$('modal').hidden) closeModal();
+    if(!$('lordModal').hidden){ $('lordModal').hidden = true; document.body.style.overflow = ''; }
     $('crossMenu').hidden = true;
   }
 });
@@ -689,6 +826,22 @@ $('ropeSize').addEventListener('change', e => {
   store.set('size', state.ropeSize); renderStats();
   note('A rope of ' + state.ropeSize + ' beads. Begin gently.');
 });
+$('ropeStyle').value = state.ropeStyle;
+$('ropeStyle').addEventListener('change', e => {
+  state.ropeStyle = e.target.value; store.set('ropeStyle', state.ropeStyle);
+  renderStats(); note(ROPE_STYLES[state.ropeStyle].hint);
+});
+const markerBtn = $('markerBtn');
+function renderMarker(){
+  markerBtn.classList.toggle('on', state.markers);
+  markerBtn.setAttribute('aria-pressed', String(state.markers));
+}
+markerBtn.addEventListener('click', () => {
+  state.markers = !state.markers; store.set('markers', state.markers);
+  renderMarker();
+  note(state.markers ? 'Marker beads on — a larger, darker bead every 10.' : 'Marker beads off.');
+});
+renderMarker();
 $('resetBtn').addEventListener('click', () => {
   state.session = 0; state.rounds = 0; state.current = 0;
   renderStats(); note('Counter reset — begin again, gently.');
@@ -741,7 +894,9 @@ const TABS = [
     <p>The <strong>Philokalia</strong> (18th century) gathered centuries of this hesychast wisdom: the prayer said gently, often with the breath, until the heart itself learns to pray.</p>
     <p>In the <strong>Armenian Church</strong>, St. Gregory of Narek (10th century) gave the tradition its most beloved voice: his <em>Book of Lamentations</em> &mdash; the Narek &mdash; is ninety-five prayers of a sinner begging God&rsquo;s mercy, prayed in Armenian homes for a thousand years. <em>&ldquo;Have mercy on me, a sinner&rdquo;</em> is, in a real sense, an Armenian prayer.</p>
     <h3>The prayer rope</h3>
-    <p>Wool, for the flock of Christ; black, for mourning over sin; each knot woven with tiny crosses; the tassel, tradition says, for wiping the tears of repentance. Thirty-three knots for the years of Christ&rsquo;s earthly life &mdash; fifty, one hundred, three hundred for longer rules. Monks, and laypeople with them, have counted the prayer on such ropes for over a thousand years.</p>` },
+    <p>Wool, for the flock of Christ; black, for mourning over sin; each knot woven with tiny crosses; the tassel, tradition says, for wiping the tears of repentance. Thirty-three knots for the years of Christ&rsquo;s earthly life &mdash; fifty, one hundred, three hundred for longer rules. Monks, and laypeople with them, have counted the prayer on such ropes for over a thousand years.</p>
+    <h3>Other traditions, other beads</h3>
+    <p>Many others count their own prayers on their own beads &mdash; the Catholic rosary&rsquo;s five decades, the misbaha&rsquo;s ninety-nine names of God, the mala&rsquo;s one hundred and eight mantras, the Anglican thirty-three. You can try their shapes with the rope selector below the beads. The beads differ; the longing is the same, and all are welcome here.</p>` },
   { id:'how', label:'How to Pray', html: `
     <h3>Begin gently</h3>
     <p>Sit quietly. Let your shoulders fall. Say the words slowly &mdash; once for each bead &mdash; and let your attention rest on them, not on doing it perfectly.</p>
@@ -752,7 +907,9 @@ const TABS = [
     <h3>About this app</h3>
     <p>This little app was made with reverence by <strong>Raphael Malikian</strong>, as a quiet corner of the internet for anyone drawn to the Jesus Prayer &mdash; of any church, or none yet. If it helps you pray, it has done its work.</p>
     <p>GitHub: <a href="https://github.com/rtmalikian" target="_blank" rel="noopener">github.com/rtmalikian</a><br>
-    X: <a href="https://x.com/rtmalikian" target="_blank" rel="noopener">x.com/rtmalikian</a></p>
+    X: <a href="https://x.com/rtmalikian" target="_blank" rel="noopener">x.com/rtmalikian</a><br>
+    Email: <a href="mailto:rtmalikian@gmail.com">rtmalikian@gmail.com</a></p>
+    <p>Made using Muse.</p>
     <p><em>Soli Deo gloria</em> &mdash; glory to God alone.</p>` }
 ];
 const tabsEl = $('tabs'), bodyEl = $('tabBody');

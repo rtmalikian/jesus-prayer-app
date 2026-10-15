@@ -24,6 +24,9 @@ The Fathers speak of the Jesus Prayer as both weapon and protection — *"the sh
 - **Karaoke-style word highlighting** — in auto-prayer mode the words of the Jesus Prayer light up one by one at a natural speaking pace
 - **Cross selector** — a discreet top-right picker with Armenian Apostolic (Oriental Orthodox, the default), Eastern Orthodox, Coptic, Greek Byzantine, and Ethiopian crosses; the cross pendant hangs at the bottom of the rope, as on a real komboskini, and always matches your choice
 - **Prayer tally counter** — tracks beads prayed this sitting, rounds completed, and an all-time total saved on your device
+- **Rope styles** — Komboskini (Orthodox knots), Rosary (decades with larger Pater beads), Misbaha (amber beads, imam bead and tassel), Mala (guru bead and tassel), and Anglican (weeks divided by cruciform beads)
+- **Marker beads toggle** — a larger, darker bead every 10 beads on the komboskini
+- **The Lord's Prayer** — offered after each completed round, as the Church has always done
 - **Gentle wooden knock + vibration** — a soft, low synthesized bead tap (WebAudio, no audio files) with a subtle phone vibration on each bead; phone-style **Sound / Vibrate / Silent** toggle
 - **Guide to the Jesus Prayer** — tap the ⓘ button for the prayer's biblical roots, its history from an **Oriental Orthodox perspective** (Desert Fathers, St. Isaac the Syrian, St. Gregory of Narek, the Philokalia), and how to begin
 - **No account, no tracking** — everything runs in your browser; your tally never leaves your device
@@ -53,7 +56,7 @@ No build step, no dependencies — just open `index.html` or serve the folder st
 
 ## About
 
-Made with reverence by **Raphael Malikian** — [github.com/rtmalikian](https://github.com/rtmalikian) · [x.com/rtmalikian](https://x.com/rtmalikian). If it helps you pray, it has done its work. *Soli Deo gloria.*
+Made with reverence by **Raphael Malikian** — [github.com/rtmalikian](https://github.com/rtmalikian) · [x.com/rtmalikian](https://x.com/rtmalikian) · rtmalikian@gmail.com. Made using Muse. If it helps you pray, it has done its work. *Soli Deo gloria.*
 
 ## Keywords
 
